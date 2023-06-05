@@ -246,8 +246,8 @@ def performSentilytics(videoID):
     
     from database import insert_hlSentiComments,insert_llSentiComments
     
-    # insert_hlSentiComments(hlSenti_df)
-    # insert_llSentiComments(llSenti_df)
+    insert_hlSentiComments(hlSenti_df)
+    insert_llSentiComments(llSenti_df)
     
     return create_comments_json(hlSenti_df, llSenti_df)
     

@@ -188,6 +188,48 @@ def insert_llSentiComments(df):
     
     connection.commit()
     connection.close()
+    
+
+def retrieve_comments_by_sentiment(table_name: str, videoID: str, sentiment: str):
+    conn = sqlite3.connect("sentilytics.db")
+    cursor = conn.cursor()
+
+    query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = ? AND sentiment = ?"
+    print(query)
+    cursor.execute(query,(videoID, sentiment))
+
+    comments = []
+    for row in cursor.fetchall():
+        comment = {
+            "comment_id": row[1],
+            "comment": row[2],
+            "sentiment": row[3]
+        }
+        comments.append(comment)
+    conn.close()
+
+    return  {videoID: comments}
+
+
+def retrieve_all_comments(table_name: str, videoID: str):
+    conn = sqlite3.connect("sentilytics.db")
+    cursor = conn.cursor()
+
+    query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = ?"
+    print(query)
+    cursor.execute(query, (videoID,))
+    comments = []
+    for row in cursor.fetchall():
+        comment = {
+            "comment_id": row[1],
+            "comment": row[2],
+            "sentiment": row[3]
+        }
+        comments.append(comment)
+    
+    conn.close()
+
+    return {videoID: comments}
 
 
 

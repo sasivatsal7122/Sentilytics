@@ -1,10 +1,12 @@
-from fastapi import FastAPI, APIRouter, Query
+from fastapi import FastAPI, APIRouter, Query,HTTPException
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from typing import Optional
 
 from process import get_channel_info,get_latest20,get_HighLvlcomments,get_Lowlvlcomments
 
 from sentimentAnalysis import performSentilytics
-
+from database import retrieve_comments_by_sentiment,retrieve_all_comments
 
 app = FastAPI()
 # Create an APIRouter instance for grouping related routes
@@ -60,6 +62,44 @@ async def perform_sentilytics(videoID: str = Query(..., description="Video ID"))
     """
     sentilytics_result = performSentilytics(videoID)
     return JSONResponse(content=sentilytics_result)
+
+
+
+@app.get("/get_comments/")
+async def get_comments(comments: str, videoID: str, sentiment: str = None):
+    
+    # Determine the table name based on the query parameters
+    if comments == "hl":
+        table_name = "OnlyComments_SentimentAnalysis"
+    elif comments == "ll":
+        table_name = "CommentsWithReply_SentimentAnalysis"
+    else:
+        raise HTTPException(status_code=400, detail="Either 'hl' or 'll' parameter is required.")
+
+    videoID = videoID
+
+    # Retrieve comments from the table based on the sentiment parameter
+    if sentiment:
+        if sentiment not in ["positive", "negative", "neutral"]:
+            raise HTTPException(status_code=400, detail="Invalid value for 'sentiment' parameter.")
+        sentiment = sentiment.title()
+        comments = retrieve_comments_by_sentiment(table_name, videoID, sentiment)
+        count = len(comments[videoID])
+        return {"count": count, "comments": comments}
+    else:
+        comments = retrieve_all_comments(table_name, videoID)
+        positive_count = len([c for c in comments[videoID] if c["sentiment"] == "Positive"])
+        negative_count = len([c for c in comments[videoID] if c["sentiment"] == "Negative"])
+        neutral_count = len([c for c in comments[videoID] if c["sentiment"] == "Neutral"])
+        return {
+            
+            "positive_count": positive_count,
+            "negative_count": negative_count,
+            "neutral_count": neutral_count,
+            "total_count": len(comments[videoID]),
+            "comments":comments,
+        }
+
 
 # Include the router in the main app
 app.include_router(router)
