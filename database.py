@@ -1,135 +1,194 @@
 import sqlite3
+import pandas as pd
 
-conn = sqlite3.connect('sentilytics.db')
-cursor = conn.cursor()
-
-
-def createIntialTables():
-    # Create the Users table
+def insert_channel_info(user_id, channel_id, channel_title, channel_description, subscriber_count, video_count,
+                        channel_created_date, channel_logo_url):
+    connection = sqlite3.connect("sentilytics.db")
+    cursor = connection.cursor()
+    
+    # Inserting the channel information into the Channels table
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Users (
-            user_id VARCHAR PRIMARY KEY,
-            Username VARCHAR,
-            email VARCHAR,
-            password VARCHAR,
-            created_at TIMESTAMP
+        INSERT INTO Channels (
+            user_id,
+            channel_id,
+            channel_title,
+            channel_description,
+            subscriber_count,
+            video_count,
+            channel_created_date,
+            channel_logo_url
         )
-    ''')
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        user_id,
+        channel_id,
+        channel_title,
+        channel_description,
+        subscriber_count,
+        video_count,
+        channel_created_date,
+        channel_logo_url
+    ))
 
-    # Create the Channels table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Channels (
-            user_id VARCHAR,
-            channel_id VARCHAR,
-            channel_title VARCHAR,
-            channel_description VARCHAR,
-            subscriber_count INTEGER,
-            video_count INTEGER,
-            channel_created_date TIMESTAMP,
-            channel_logo_url VARCHAR,
-            PRIMARY KEY (user_id, channel_id),
-            FOREIGN KEY (user_id) REFERENCES Users(user_id)
+    # Commit the changes to the database
+    connection.commit()
+    connection.close()
+
+
+def insert_videos_info(df):
+    connection = sqlite3.connect("sentilytics.db")
+    cursor = connection.cursor()
+
+    video_data = df.to_records(index=False)
+    cursor.executemany('''
+        INSERT INTO Videos (
+            channel_id,
+            vid_id,
+            vid_title,
+            vid_view_cnt,
+            vid_like_cnt,
+            vid_comment_cnt,
+            vid_url,
+            vid_desc,
+            vid_duration,
+            vid_published_at,
+            vid_thumbnail
         )
-    ''')
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', video_data)
+    
+    connection.commit()
+    connection.close()
+    
+def insert_highlvl_cmntInfo(df):
+    connection = sqlite3.connect("sentilytics.db")
+    cursor = connection.cursor()
 
-    # Create the Videos table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Videos (
-            channel_id VARCHAR,
-            vid_id VARCHAR,
-            vid_title VARCHAR,
-            vid_view_cnt INTEGER,
-            vid_like_cnt INTEGER,
-            vid_comment_cnt INTEGER,
-            vid_url VARCHAR,
-            vid_desc VARCHAR,
-            vid_duration VARCHAR,
-            vid_published_at TIMESTAMP,
-            vid_thumbnail VARCHAR,
-            PRIMARY KEY (channel_id, vid_id),
-            FOREIGN KEY (channel_id) REFERENCES Channels(channel_id)
-        )
-    ''')
+    comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
+    cursor.executemany('''
+        INSERT INTO OnlyComments_Unfiltered (vid_id, comment_id, comment) VALUES (?, ?, ?)
+    ''', comments_data)
+    
+    connection.commit()
+    connection.close()
+    
+def insert_highlvl_filtered_cmntInfo(df):
+    connection = sqlite3.connect("sentilytics.db")
+    cursor = connection.cursor()
 
-    # Create the OnlyComments_Unfiltered table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS OnlyComments_Unfiltered (
-            vid_id VARCHAR,
-            comment_id VARCHAR,
-            comment VARCHAR,
-            PRIMARY KEY (vid_id, comment_id),
-            FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
-        )
-    ''')
+    comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
+    cursor.executemany('''
+        INSERT INTO OnlyComments_filtered (vid_id, comment_id, comment) VALUES (?, ?, ?)
+    ''', comments_data)
+    
+    connection.commit()
+    connection.close()
+    
+def insert_lowlvl_cmntInfo(df):
+    connection = sqlite3.connect("sentilytics.db")
+    cursor = connection.cursor()
 
-    # Create the CommentsWithReply_Unfiltered table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS CommentsWithReply_Unfiltered (
-            vid_id VARCHAR,
-            comment_id VARCHAR,
-            comment VARCHAR,
-            PRIMARY KEY (vid_id, comment_id),
-            FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
-        )
-    ''')
+    comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
+    cursor.executemany('''
+        INSERT INTO CommentsWithReply_Unfiltered (vid_id, comment_id, comment) VALUES (?, ?, ?)
+    ''', comments_data)
+    
+    connection.commit()
+    connection.close()
+    
+def insert_lowlvl_filtered_cmntInfo(df):
+    connection = sqlite3.connect("sentilytics.db")
+    cursor = connection.cursor()
 
-    # Create the OnlyComments_filtered table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS OnlyComments_filtered (
-            vid_id VARCHAR,
-            comment_id VARCHAR,
-            comment VARCHAR,
-            PRIMARY KEY (vid_id, comment_id),
-            FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
-        )
-    ''')
+    comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
+    cursor.executemany('''
+        INSERT INTO CommentsWithReply_filtered (vid_id, comment_id, comment) VALUES (?, ?, ?)
+    ''', comments_data)
+    
+    connection.commit()
+    connection.close()
+    
+    
+def get_FhlComments(vid_id):
+    conn = sqlite3.connect('sentilytics.db')
 
-    # Create the CommentsWithReply_filtered table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS CommentsWithReply_filtered (
-            vid_id VARCHAR,
-            comment_id VARCHAR,
-            comment VARCHAR,
-            PRIMARY KEY (vid_id, comment_id),
-            FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
-        )
-    ''')
-
-    # Create the Emoji_Frequency table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Emoji_Frequency (
-            vid_id VARCHAR,
-            highlvl_freq VARCHAR,
-            all_freq VARCHAR,
-            PRIMARY KEY (vid_id),
-            FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
-        )
-    ''')
-
-    # Create the OnlyComments_SentimentAnalysis table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS OnlyComments_SentimentAnalysis (
-            vid_id VARCHAR,
-            comment_id VARCHAR,
-            comment VARCHAR,
-            sentiment VARCHAR,
-            PRIMARY KEY (vid_id, comment_id),
-            FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
-        )
-    ''')
-
-    # Create the CommentsWithReply_SentimentAnalysis table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS CommentsWithReply_SentimentAnalysis (
-            vid_id VARCHAR,
-            comment_id VARCHAR,
-            comment VARCHAR,
-            sentiment VARCHAR,
-            PRIMARY KEY (vid_id, comment_id),
-            FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
-        )
-    ''')
-
-    # Commit the changes and close the connection
-    conn.commit()
+    query = f"SELECT * FROM OnlyComments_filtered WHERE vid_id = '{vid_id}'"
+    result = conn.execute(query)
+    
+    columns = ['Video ID', 'Comment ID', 'Comments']
+    data = result.fetchall()
+    df = pd.DataFrame(data, columns=columns)
     conn.close()
+    
+    return df
+
+    
+def get_FllComments(vid_id):
+    conn = sqlite3.connect('sentilytics.db')
+
+    query = f"SELECT * FROM CommentsWithReply_filtered WHERE vid_id = '{vid_id}'"
+    result = conn.execute(query)
+    
+    columns = ['Video ID', 'Comment ID', 'Comments']
+    data = result.fetchall()
+    df = pd.DataFrame(data, columns=columns)
+    conn.close()
+    
+    return df
+
+    
+def get_MhlComments(vid_id):
+    conn = sqlite3.connect('sentilytics.db')
+
+    query = f"SELECT * FROM OnlyComments_Unfiltered WHERE vid_id = '{vid_id}'"
+    result = conn.execute(query)
+    
+    columns = ['Video ID', 'Comment ID', 'Comments']
+    data = result.fetchall()
+    df = pd.DataFrame(data, columns=columns)
+    conn.close()
+    
+    return df
+
+    
+def get_MllComments(vid_id):
+    conn = sqlite3.connect('sentilytics.db')
+
+    query = f"SELECT * FROM CommentsWithReply_Unfiltered WHERE vid_id = '{vid_id}'"
+    result = conn.execute(query)
+    
+    columns = ['Video ID', 'Comment ID', 'Comments']
+    data = result.fetchall()
+    df = pd.DataFrame(data, columns=columns)
+    conn.close()
+    
+    return df
+
+
+def insert_hlSentiComments(df):
+    connection = sqlite3.connect("sentilytics.db")
+    cursor = connection.cursor()
+
+    comments_data = df[['Video ID', 'Comment ID', 'Comments', 'Sentiment']].to_records(index=False)
+    cursor.executemany('''
+        INSERT INTO OnlyComments_SentimentAnalysis (vid_id, comment_id, comment, sentiment) VALUES (?, ?, ?, ?)
+    ''', comments_data)
+    
+    connection.commit()
+    connection.close()
+
+def insert_llSentiComments(df):
+    connection = sqlite3.connect("sentilytics.db")
+    cursor = connection.cursor()
+
+    comments_data = df[['Video ID', 'Comment ID', 'Comments', 'Sentiment']].to_records(index=False)
+    cursor.executemany('''
+        INSERT INTO CommentsWithReply_SentimentAnalysis (vid_id, comment_id, comment, sentiment) VALUES (?, ?, ?, ?)
+    ''', comments_data)
+    
+    connection.commit()
+    connection.close()
+
+
+
+
