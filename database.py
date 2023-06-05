@@ -232,5 +232,31 @@ def retrieve_all_comments(table_name: str, videoID: str):
     return {videoID: comments}
 
 
+def get_videos_by_channelID(channelID):
+    conn = sqlite3.connect("sentilytics.db")
+    cursor = conn.cursor()
 
+    query = "SELECT vid_id, vid_title, vid_view_cnt, vid_like_cnt, vid_comment_cnt, vid_url, vid_desc, vid_duration, vid_published_at, vid_thumbnail FROM Videos WHERE channel_id = ?"
+    cursor.execute(query, (channelID,))
+    rows = cursor.fetchall()
+
+    videos = {}
+    for row in rows:
+        video_id = row[0]
+        video_data = {
+            "vid_title": row[1],
+            "vid_view_cnt": row[2],
+            "vid_like_cnt": row[3],
+            "vid_comment_cnt": row[4],
+            "vid_url": row[5],
+            "vid_desc": row[6],
+            "vid_duration": row[7],
+            "vid_published_at": row[8],
+            "vid_thumbnail": row[9]
+        }
+        videos[video_id] = video_data
+
+    conn.close()
+
+    return {"channelID":channelID, "videos": videos}
 

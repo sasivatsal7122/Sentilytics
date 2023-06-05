@@ -6,7 +6,7 @@ from typing import Optional
 from process import get_channel_info,get_latest20,get_HighLvlcomments,get_Lowlvlcomments
 
 from sentimentAnalysis import performSentilytics
-from database import retrieve_comments_by_sentiment,retrieve_all_comments
+from database import retrieve_comments_by_sentiment,retrieve_all_comments,get_videos_by_channelID
 
 app = FastAPI()
 # Create an APIRouter instance for grouping related routes
@@ -63,7 +63,13 @@ async def perform_sentilytics(videoID: str = Query(..., description="Video ID"))
     sentilytics_result = performSentilytics(videoID)
     return JSONResponse(content=sentilytics_result)
 
-
+@router.get("/get_videos/")
+async def perform_sentilytics(channelID: str = Query(..., description="Channel ID")):
+    """
+    Endpoint to perform sentiment analysis on comments.
+    """
+    video_result = get_videos_by_channelID(channelID)
+    return JSONResponse(content=video_result)
 
 @app.get("/get_comments/")
 async def get_comments(comments: str, videoID: str, sentiment: str = None):
@@ -99,7 +105,6 @@ async def get_comments(comments: str, videoID: str, sentiment: str = None):
             "total_count": len(comments[videoID]),
             "comments":comments,
         }
-
-
+        
 # Include the router in the main app
 app.include_router(router)
