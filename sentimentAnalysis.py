@@ -19,6 +19,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def vader(vader_df):
+    vader_df['Comments'] = vader_df['Comments'].astype(str)
     vader_df['Comments'] = vader_df['Comments'].apply(lambda x: ' '.join([w for w in x.split() if len(w)>3]))
     vader_df['Comments'] = vader_df['Comments'].apply(lambda x:x.lower())
 
@@ -45,6 +46,7 @@ def vader(vader_df):
     return vader_df, classfication_cnt, vader_percentages
 
 def textblob(textBlob_df):
+    textBlob_df['Comments'] = textBlob_df['Comments'].astype(str)
     textBlob_df['Sentiment Scores'] = ''
     textBlob_df['Sentiment'] = ''
 
@@ -52,22 +54,22 @@ def textblob(textBlob_df):
         text = text.lower()    
         text = text.translate(str.maketrans('', '', string.punctuation))    
         tokens = text.split()
-        
+
         stop_words = set(stopwords.words('english'))
         tokens = [word for word in tokens if word not in stop_words]
         preprocessed_text = ' '.join(tokens)
-        
+
         return preprocessed_text
 
     for index, row in textBlob_df.iterrows():
         comment = row['Comments']    
         preprocessed_comment = preprocess_text(comment)
-        
+
         blob = TextBlob(preprocessed_comment)
         polarity = blob.sentiment.polarity
-        
+
         textBlob_df.at[index, 'Sentiment Scores'] = polarity
-        
+
         if polarity > 0:
             textBlob_df.at[index, 'Sentiment'] = 'Positive'
         elif polarity < 0:
@@ -82,6 +84,7 @@ def textblob(textBlob_df):
 
 def afinn(afinn_df):
     afinn = Afinn()
+    afinn_df['Comments'] = afinn_df['Comments'].astype(str)
 
     stop_words = set(stopwords.words('english'))
     lemmatizer = WordNetLemmatizer()
@@ -114,34 +117,38 @@ def afinn(afinn_df):
     
 def performSentiandVoting(master_comments_df,comments_df,videoID):
     
-    comment_ids = list(master_comments_df['Comment ID'].to_list())
+    comment_ids = list(comments_df['Comment ID'].to_list())
     
-    vader_df, classfication_cnt, vader_percentages = vader(comments_df)
-    textBlob_df,classfication_cnt, textBlob_percentages = textblob(comments_df)
-    afinn_df,classfication_cnt, afinn_percentages = afinn(comments_df)
+    tb_df = comments_df.copy()
+    textBlob_df, tbclassfication_cnt, textBlob_percentages = textblob(tb_df)
     
+    af_df = comments_df.copy()
+    afinn_df, afclassfication_cnt, afinn_percentages = afinn(af_df)
+    
+    vd_df = comments_df.copy()
+    vader_df, vclassfication_cnt, vader_percentages = vader(vd_df)
+
     vote_df = pd.DataFrame()
     for comment_id in comment_ids:
-        
         pos_count = 0
         neg_count = 0
         neu_count = 0
-        
-        vader_sentimet_pred = vader_df.loc[vader_df['Comment ID'] == comment_id, 'Sentiment'].values 
-        pos_count += sum(vader_sentimet_pred == 'Positive')
-        neg_count += sum(vader_sentimet_pred == 'Negative')
-        neu_count += sum(vader_sentimet_pred == 'Neutral')
-        
-        textblob_sentimet_pred = textBlob_df.loc[textBlob_df['Comment ID'] == comment_id, 'Sentiment'].values
-        pos_count += sum(textblob_sentimet_pred == 'Positive')
-        neg_count += sum(textblob_sentimet_pred == 'Negative')
-        neu_count += sum(textblob_sentimet_pred == 'Neutral')
-        
-        afinn_sentimet_pred = afinn_df.loc[afinn_df['Comment ID'] == comment_id, 'Sentiment'].values
-        pos_count += sum(afinn_sentimet_pred == 'Positive')
-        neg_count += sum(afinn_sentimet_pred == 'Negative')
-        neu_count += sum(afinn_sentimet_pred == 'Neutral')
-        
+
+        vader_sentiment_pred = vader_df.loc[vader_df['Comment ID'] == comment_id, 'Sentiment'].values
+        pos_count += sum(vader_sentiment_pred == 'Positive')
+        neg_count += sum(vader_sentiment_pred == 'Negative')
+        neu_count += sum(vader_sentiment_pred == 'Neutral')
+
+        textblob_sentiment_pred = textBlob_df.loc[textBlob_df['Comment ID'] == comment_id, 'Sentiment'].values
+        pos_count += sum(textblob_sentiment_pred == 'Positive')
+        neg_count += sum(textblob_sentiment_pred == 'Negative')
+        neu_count += sum(textblob_sentiment_pred == 'Neutral')
+
+        afinn_sentiment_pred = afinn_df.loc[afinn_df['Comment ID'] == comment_id, 'Sentiment'].values
+        pos_count += sum(afinn_sentiment_pred == 'Positive')
+        neg_count += sum(afinn_sentiment_pred == 'Negative')
+        neu_count += sum(afinn_sentiment_pred == 'Neutral')
+
         vote_df = vote_df.append({'Comment ID': comment_id, 'Positive': pos_count, 'Negative': neg_count, 'Neutral': neu_count}, ignore_index=True)
 
     vote_df = vote_df.fillna(0)
@@ -168,14 +175,14 @@ def create_comments_json(hlSenti_df, llSenti_df):
             "Comments Count": {"High Level": str(hlSenti_df.shape[0]), "Low Level": str(llSenti_df.shape[0])},
             "Sentiment Percentages": {
                 "High Level Percentages": {
-                    "Positive": str(round(hlSenti_df["Sentiment"].value_counts(normalize=True).get("Positive", 0) * 100,2))+"%",
-                    "Negative": str(round(hlSenti_df["Sentiment"].value_counts(normalize=True).get("Negative", 0) * 100,2))+"%",
-                    "Neutral": str(round(hlSenti_df["Sentiment"].value_counts(normalize=True).get("Neutral", 0) * 100,2))+"%"
+                    "Positive": str(round(hlSenti_df["Sentiment"].value_counts(normalize=True).get("Positive", 0) * 100,2))+" %",
+                    "Negative": str(round(hlSenti_df["Sentiment"].value_counts(normalize=True).get("Negative", 0) * 100,2))+" %",
+                    "Neutral": str(round(hlSenti_df["Sentiment"].value_counts(normalize=True).get("Neutral", 0) * 100,2))+" %"
                 },
                 "Low Level Percentages": {
-                    "Positive": str(round(llSenti_df["Sentiment"].value_counts(normalize=True).get("Positive", 0) * 100,2))+"%",
-                    "Negative": str(round(llSenti_df["Sentiment"].value_counts(normalize=True).get("Negative", 0) * 100,2))+"%",
-                    "Neutral": str(round(llSenti_df["Sentiment"].value_counts(normalize=True).get("Neutral", 0) * 100,2))+"%"
+                    "Positive": str(round(llSenti_df["Sentiment"].value_counts(normalize=True).get("Positive", 0) * 100,2))+" %",
+                    "Negative": str(round(llSenti_df["Sentiment"].value_counts(normalize=True).get("Negative", 0) * 100,2))+" %",
+                    "Neutral": str(round(llSenti_df["Sentiment"].value_counts(normalize=True).get("Neutral", 0) * 100,2))+" %"
                 }
             },
             "Sentiment Count": {
@@ -194,7 +201,6 @@ def create_comments_json(hlSenti_df, llSenti_df):
         "Comments": {},
         "All Comments": {}
     }
-
 
     hl_comments = []
     for index, row in hlSenti_df.iterrows():
@@ -230,7 +236,7 @@ def performSentilytics(videoID):
     
     comments_df = get_FhlComments(videoID)
     master_comments_df = get_MhlComments(videoID)
-    
+
     hlSenti_df = performSentiandVoting(master_comments_df,comments_df,videoID)
     
     Allcomments_df = get_FllComments(videoID)

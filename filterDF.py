@@ -1,7 +1,6 @@
 import re
 import numpy as np
 
-
 def FilterDF(df):
     emoji_pattern = re.compile("["
                                u"\U0001F600-\U0001F64F"  # Emojis
@@ -25,12 +24,15 @@ def FilterDF(df):
                                "]+", flags=re.UNICODE)
     
     hyperlink_pattern = re.compile(r"http\S+|www\S+")
-    unwanted_chars_pattern = re.compile(r"[^a-zA-Z0-9\s]")
+    unwanted_chars_pattern = re.compile(r"[^a-zA-Z\s]")  # Updated pattern to include digits \d
     
     df['Comments'] = df['Comments'].apply(lambda comment: emoji_pattern.sub(r'', comment))  # Remove emojis
     df['Comments'] = df['Comments'].apply(lambda comment: hyperlink_pattern.sub(r'', comment))  # Remove hyperlinks
     df['Comments'] = df['Comments'].apply(lambda comment: unwanted_chars_pattern.sub(r'', comment))  # Remove unwanted characters
+    df['Comments'] = df['Comments'].apply(lambda comment: re.sub(r'\d+', '', comment))  # Remove integers
+    df['Comments'] = df['Comments'].apply(lambda comment: re.sub(r'\d+\.\d+', '', comment))  # Remove floats
     
     df['Comments'] = df['Comments'].str.strip().str.lower()
     
+    df = df.dropna()  # Drop empty rows
     return df
