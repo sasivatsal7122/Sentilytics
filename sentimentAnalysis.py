@@ -1,10 +1,15 @@
 import pandas as pd
+import numpy as np
 import json
 import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from scipy.special import softmax
+import csv
+import urllib.request
 
 from textblob import TextBlob
 from afinn import Afinn
@@ -113,7 +118,112 @@ def afinn(afinn_df):
     
     return afinn_df, classfication_cnt, afinn_percentages
     
+
+def robert_new(robertNew_df):
+    def preprocess_text(text):
+        text = text.lower()    
+        text = text.translate(str.maketrans('', '', string.punctuation))    
+        tokens = text.split()
+
+        stop_words = set(stopwords.words('english'))
+        tokens = [word for word in tokens if word not in stop_words]
+        preprocessed_text = ' '.join(tokens)
+
+        return preprocessed_text
     
+    mapping_link = f"https://raw.githubusercontent.com/cardiffnlp/tweeteval/main/datasets/sentiment/mapping.txt"
+    with urllib.request.urlopen(mapping_link) as f:
+        html = f.read().decode('utf-8').split("\n")
+        csvreader = csv.reader(html, delimiter='\t')
+    labels = [row[1] for row in csvreader if len(row) > 1]
+
+    task = 'sentiment'
+    MODEL = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+    tokenizer = AutoTokenizer.from_pretrained(MODEL)
+
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL,from_tf=False)
+
+    robertNew_df['Comments'] = robertNew_df['Comments'].astype(str)
+    robertNew_df['Sentiment Scores'] = ''
+    robertNew_df['Sentiment'] = ''
+
+    for index, row in robertNew_df.iterrows():
+        comment = row['Comments']
+        preprocessed_comment = preprocess_text(comment)
+
+        encoded_input = tokenizer(preprocessed_comment, return_tensors='pt')
+        output = model(**encoded_input)
+        scores = output.logits[0].detach().numpy()
+        scores = softmax(scores)
+
+        ranking = np.argsort(scores)
+        ranking = ranking[::-1]
+        for i in range(scores.shape[0]):
+            l = labels[ranking[i]]
+            s = scores[ranking[i]]
+            if i == 0:
+                robertNew_df.at[index, 'Sentiment Scores'] = np.round(float(s), 4)
+                robertNew_df.at[index, 'Sentiment'] = l.title()
+                break
+            
+    classfication_cnt = robertNew_df.Sentiment.value_counts()
+    robertNew_percentages = robertNew_df['Sentiment'].value_counts(normalize=True) * 100
+    
+    return robertNew_df, classfication_cnt, robertNew_percentages
+
+
+def robert_old(robertOld_df):
+    def preprocess_text(text):
+        text = text.lower()    
+        text = text.translate(str.maketrans('', '', string.punctuation))    
+        tokens = text.split()
+
+        stop_words = set(stopwords.words('english'))
+        tokens = [word for word in tokens if word not in stop_words]
+        preprocessed_text = ' '.join(tokens)
+
+        return preprocessed_text
+    
+    mapping_link = f"https://raw.githubusercontent.com/cardiffnlp/tweeteval/main/datasets/sentiment/mapping.txt"
+    with urllib.request.urlopen(mapping_link) as f:
+        html = f.read().decode('utf-8').split("\n")
+        csvreader = csv.reader(html, delimiter='\t')
+    labels = [row[1] for row in csvreader if len(row) > 1]
+
+    task = 'sentiment'
+    MODEL = "cardiffnlp/twitter-roberta-base-sentiment"
+    tokenizer = AutoTokenizer.from_pretrained(MODEL)
+
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL,from_tf=False)
+
+    robertOld_df['Comments'] = robertOld_df['Comments'].astype(str)
+    robertOld_df['Sentiment Scores'] = ''
+    robertOld_df['Sentiment'] = ''
+
+    for index, row in robertOld_df.iterrows():
+        comment = row['Comments']
+        preprocessed_comment = preprocess_text(comment)
+
+        encoded_input = tokenizer(preprocessed_comment, return_tensors='pt')
+        output = model(**encoded_input)
+        scores = output.logits[0].detach().numpy()
+        scores = softmax(scores)
+
+        ranking = np.argsort(scores)
+        ranking = ranking[::-1]
+        for i in range(scores.shape[0]):
+            l = labels[ranking[i]]
+            s = scores[ranking[i]]
+            if i == 0:
+                robertOld_df.at[index, 'Sentiment Scores'] = np.round(float(s), 4)
+                robertOld_df.at[index, 'Sentiment'] = l.title()
+                break
+            
+    classfication_cnt = robertOld_df.Sentiment.value_counts()
+    robertOld_percentages = robertOld_df['Sentiment'].value_counts(normalize=True) * 100
+    
+    return robertOld_df, classfication_cnt, robertOld_percentages
+
     
 def performSentiandVoting(master_comments_df,comments_df,videoID):
     
@@ -127,6 +237,12 @@ def performSentiandVoting(master_comments_df,comments_df,videoID):
     
     vd_df = comments_df.copy()
     vader_df, vclassfication_cnt, vader_percentages = vader(vd_df)
+    
+    rbn_df = comments_df.copy()
+    robertNew_df, rbnclassfication_cnt, robertNew_percentages = robert_new(rbn_df)
+    
+    rbo_df = comments_df.copy()
+    robertOld_df, rboclassfication_cnt, robertOld_percentages = robert_old(rbo_df)
 
     vote_df = pd.DataFrame()
     for comment_id in comment_ids:
@@ -148,6 +264,16 @@ def performSentiandVoting(master_comments_df,comments_df,videoID):
         pos_count += sum(afinn_sentiment_pred == 'Positive')
         neg_count += sum(afinn_sentiment_pred == 'Negative')
         neu_count += sum(afinn_sentiment_pred == 'Neutral')
+        
+        robertNew_sentiment_pred = robertNew_df.loc[robertNew_df['Comment ID'] == comment_id, 'Sentiment'].values
+        pos_count += sum(robertNew_sentiment_pred == 'Positive')
+        neg_count += sum(robertNew_sentiment_pred == 'Negative')
+        neu_count += sum(robertNew_sentiment_pred == 'Neutral')
+        
+        robertOld_sentiment_pred = robertOld_df.loc[robertOld_df['Comment ID'] == comment_id, 'Sentiment'].values
+        pos_count += sum(robertOld_sentiment_pred == 'Positive')
+        neg_count += sum(robertOld_sentiment_pred == 'Negative')
+        neu_count += sum(robertOld_sentiment_pred == 'Neutral')
 
         vote_df = vote_df.append({'Comment ID': comment_id, 'Positive': pos_count, 'Negative': neg_count, 'Neutral': neu_count}, ignore_index=True)
 
