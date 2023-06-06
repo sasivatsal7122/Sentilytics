@@ -111,3 +111,43 @@ The base URL for all API endpoints is `http://127.0.0.1:8000`.
     GET /get_comments/?comments=hl&videoID=12345&sentiment=positive HTTP/1.1
     Host: http://127.0.0.1:8000
     ```
+
+## 9. Get User Requests
+
+- **Endpoint**: `/get_user_requests/`
+- **Method**: GET
+- **Description**: Retrieves all user requests.
+- **Parameters**:
+    - `userID` (required): User ID
+- **Example**:
+    ```http
+    GET /get_user_requests/?userID=12345 HTTP/1.1
+    Host: http://127.0.0.1:8000
+    ```
+
+## 10. Get Completed Works
+
+- **Endpoint**: `/get_completed_works/`
+- **Method**: GET
+- **Description**: Retrieves work progress for a given channel ID.
+- **Parameters**:
+    - `channelID` (required): Channel ID
+- **Example**:
+    ```http
+    GET /get_completed_works/?channelID=abcde HTTP/1.1
+    Host: http://127.0.0.1:8000
+    ```
+
+## 11 .Get Pending Works
+
+- **Endpoint**: `/get_pending_works/`
+- **Method**: GET
+- **Description**: Retrieves pending works for a given channel ID.
+- **Parameters**:
+    - `channelID` (required): Channel ID
+- **Example**:
+    ```http
+    GET /get_pending_works/?channelID=abcde HTTP/1.1
+    Host: http://127.0.0.1:8000
+    ```
+
