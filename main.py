@@ -6,7 +6,8 @@ from typing import Optional
 from process import get_channel_info,get_latest20,get_HighLvlcomments,get_Lowlvlcomments
 
 from sentimentAnalysis import performSentilytics
-from database import retrieve_comments_by_sentiment,retrieve_all_comments,get_videos_by_channelID
+from database import retrieve_comments_by_sentiment,retrieve_all_comments,get_videos_by_channelID\
+                     ,get_user_requests,get_completed_works,get_pending_works
 
 app = FastAPI()
 # Create an APIRouter instance for grouping related routes
@@ -105,6 +106,30 @@ async def get_comments(comments: str, videoID: str, sentiment: str = None):
             "total_count": len(comments[videoID]),
             "comments":comments,
         }
-        
+
+@router.get("/get_user_requests/")
+async def perform_sentilytics(userID: str = Query(..., description="User ID")):
+    """
+    Endpoint to get all the user requests.
+    """
+    return JSONResponse(content=get_user_requests(userID))
+
+
+@router.get("/get_completed_works/")
+async def perform_sentilytics(channelID: str = Query(..., description="Channel ID")):
+    """
+    Endpoint to get work progress for a given channelID
+    """
+    return JSONResponse(content=get_completed_works(channelID))
+
+
+@router.get("/get_pending_works/")
+async def perform_sentilytics(channelID: str = Query(..., description="Channel ID")):
+    """
+    Endpoint to get pending works for a given channelID
+    """
+    return JSONResponse(content=get_pending_works(channelID))
+
+
 # Include the router in the main app
 app.include_router(router)
