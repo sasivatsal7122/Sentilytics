@@ -22,6 +22,10 @@ nltk.download('wordnet')
 
 import warnings
 warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", message="oneDNN custom operations are on.")
+warnings.filterwarnings("ignore", message="This TensorFlow binary is optimized to use available CPU instructions.")
+warnings.filterwarnings("ignore", message="TF-TRT Warning: Could not find TensorRT")
+warnings.filterwarnings("ignore", message="Some weights of the model checkpoint at cardiffnlp/twitter-roberta-base-sentiment-latest were not used when initializing RobertaForSequenceClassification")
 
 def vader(vader_df):
     vader_df['Comments'] = vader_df['Comments'].astype(str)
