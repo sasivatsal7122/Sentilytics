@@ -2,11 +2,13 @@ from fastapi import FastAPI, APIRouter, Query,HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
+import yt_dlp
 
-from process import get_channel_info,get_latest20,get_HighLvlcomments,get_Lowlvlcomments
+from process import get_channel_info,get_HighLvlcomments,get_Lowlvlcomments
 
 from sentimentAnalysis import performSentilytics
-from database import retrieve_comments_by_sentiment,retrieve_all_comments,get_videos_by_channelID\
+
+from database import insert_videos_info,retrieve_comments_by_sentiment,retrieve_all_comments,get_videos_by_channelID\
                      ,get_user_requests,get_completed_works,get_pending_works
 
 app = FastAPI()
@@ -34,8 +36,59 @@ async def get_latest20(channelID: str = Query(..., description="Channel ID")):
     """
     Endpoint to get the latest 20 records.
     """
-    latest_records = get_latest20(channelID)
-    return JSONResponse(content=latest_records)
+    from datetime import datetime
+    import pandas as pd
+    import json
+    
+    channel_url = f'https://www.youtube.com/channel/{channelID}/videos'
+    ydl_opts = {
+        'format': 'best',
+        'quiet': True,
+        'no_warnings': True,
+        'ignoreerrors': True,
+        'skip_download': True,
+        'getduration': True,
+        'getdescription': True,
+        'getuploaddate': True,
+        'playlistend': 20
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info_dict = ydl.extract_info(channel_url, download=False)
+        videos = info_dict['entries']
+
+    video_data = []
+    for video in videos:
+        video_id = video['id']
+        title = video['title']
+        url = video['webpage_url']
+        description = video.get('description', '')
+        duration = video.get('duration')
+        published_at = video.get('upload_date', '')
+        thumbnails = video.get('thumbnails', [])
+        view_count = video.get('view_count', 0)
+        like_count = video.get('like_count', 0)
+        comment_count = video.get('comment_count', 0)
+        minutes, seconds = divmod(duration, 60)
+        
+        video_data.append({
+            'channel_id': channelID,
+            'video_id': video_id,
+            'title': title,
+            'view_count': str(view_count),
+            'like_count': str(like_count),
+            'comment_count': str(comment_count),
+            'url': url,
+            'description': description,
+            'duration': f'{minutes:02d}:{seconds:02d}',
+            'published_at': datetime.strptime(published_at, "%Y%m%d").strftime("%B %d, %Y"),
+            'thumbnails': thumbnails[-1]['url']           
+    })
+    df = pd.DataFrame(video_data)
+    
+    insert_videos_info(df)
+    return json.loads(json.dumps(video_data, indent=4))
+
 
 # Define the "get_hlcomments" route
 @router.get("/get_hlcomments/")

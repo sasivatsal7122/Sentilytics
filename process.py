@@ -9,6 +9,7 @@ from datetime import datetime
 import requests
 import numpy as np
 import json
+import asyncio
 
 # local imports
 from filterDF import FilterDF
@@ -68,68 +69,8 @@ def get_channel_info(user_id,channel_username):
     except HttpError as e:
         print(f'An HTTP error occurred: {e}')
         return {"Error": "An HTTP error occurred {}".format(e)}
-    
 
 
-def get_latest20(channel_id):
-    
-    try:
-        channel_url = f'https://www.youtube.com/channel/{channel_id}/videos'
-
-        ydl_opts = {
-            'format': 'best',
-            'quiet': True,
-            'no_warnings': True,
-            'ignoreerrors': True,
-            'skip_download': True,
-            'getduration': True,
-            'getdescription': True,
-            'getuploaddate': True,
-            'playlistend': 20
-        }
-
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(channel_url, download=False)
-            videos = info_dict['entries']
-            
-        video_data = []
-        for video in videos:
-            video_id = video['id']
-            title = video['title']
-            url = video['webpage_url']
-            description = video.get('description', '')
-            duration = video.get('duration')
-            published_at = video.get('upload_date', '')
-            thumbnails = video.get('thumbnails', [])
-            view_count = video.get('view_count', 0)
-            like_count = video.get('like_count', 0)
-            comment_count = video.get('comment_count', 0)
-            minutes, seconds = divmod(duration, 60)
-            
-            video_data.append({
-                'channel_id': channel_id,
-                'video_id': video_id,
-                'title': title,
-                'view_count': str(view_count),
-                'like_count': str(like_count),
-                'comment_count': str(comment_count),
-                'url': url,
-                'description': description,
-                'duration': f'{minutes:02d}:{seconds:02d}',
-                'published_at': datetime.strptime(published_at, "%Y%m%d").strftime("%B %d, %Y"),
-                'thumbnails': thumbnails[-1]['url']           
-        })
-            df = pd.DataFrame(video_data)
-        
-        insert_videos_info(df)
-        print("Videos info inserted into Database successfully")
-        return video_data
-    
-    except HttpError as e:
-        print(f'An HTTP error occurred: {e}')
-        return {"Error": "An HTTP error occurred {}".format(e)}
-    
-    
 def get_HighLvlcomments(video_id):
     
     try:
