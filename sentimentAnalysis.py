@@ -14,6 +14,7 @@ import urllib.request
 from textblob import TextBlob
 from afinn import Afinn
 import string
+import asyncio
 
 nltk.download('vader_lexicon')
 nltk.download('stopwords')
@@ -27,7 +28,7 @@ warnings.filterwarnings("ignore", message="This TensorFlow binary is optimized t
 warnings.filterwarnings("ignore", message="TF-TRT Warning: Could not find TensorRT")
 warnings.filterwarnings("ignore", message="Some weights of the model checkpoint at cardiffnlp/twitter-roberta-base-sentiment-latest were not used when initializing RobertaForSequenceClassification")
 
-def vader(vader_df):
+async def vader(vader_df):
     vader_df['Comments'] = vader_df['Comments'].astype(str)
     vader_df['Comments'] = vader_df['Comments'].apply(lambda x: ' '.join([w for w in x.split() if len(w)>3]))
     vader_df['Comments'] = vader_df['Comments'].apply(lambda x:x.lower())
@@ -52,9 +53,9 @@ def vader(vader_df):
     classfication_cnt = vader_df.Sentiment.value_counts()
     vader_percentages = vader_df['Sentiment'].value_counts(normalize=True) * 100
     
-    return vader_df, classfication_cnt, vader_percentages
+    return vader_df
 
-def textblob(textBlob_df):
+async def textblob(textBlob_df):
     textBlob_df['Comments'] = textBlob_df['Comments'].astype(str)
     textBlob_df['Sentiment Scores'] = ''
     textBlob_df['Sentiment'] = ''
@@ -89,9 +90,9 @@ def textblob(textBlob_df):
     classfication_cnt = textBlob_df.Sentiment.value_counts()
     textBlob_percentages = textBlob_df['Sentiment'].value_counts(normalize=True) * 100
     
-    return textBlob_df, classfication_cnt, textBlob_percentages
+    return textBlob_df
 
-def afinn(afinn_df):
+async def afinn(afinn_df):
     afinn = Afinn()
     afinn_df['Comments'] = afinn_df['Comments'].astype(str)
 
@@ -120,10 +121,10 @@ def afinn(afinn_df):
     classfication_cnt = afinn_df.Sentiment.value_counts()
     afinn_percentages = afinn_df['Sentiment'].value_counts(normalize=True) * 100
     
-    return afinn_df, classfication_cnt, afinn_percentages
+    return afinn_df
     
 
-def robert_new(robertNew_df):
+async def robert_new(robertNew_df):
     def preprocess_text(text):
         text = text.lower()    
         text = text.translate(str.maketrans('', '', string.punctuation))    
@@ -173,10 +174,10 @@ def robert_new(robertNew_df):
     classfication_cnt = robertNew_df.Sentiment.value_counts()
     robertNew_percentages = robertNew_df['Sentiment'].value_counts(normalize=True) * 100
     
-    return robertNew_df, classfication_cnt, robertNew_percentages
+    return robertNew_df
 
 
-def robert_old(robertOld_df):
+async def robert_old(robertOld_df):
     def preprocess_text(text):
         text = text.lower()    
         text = text.translate(str.maketrans('', '', string.punctuation))    
@@ -226,28 +227,33 @@ def robert_old(robertOld_df):
     classfication_cnt = robertOld_df.Sentiment.value_counts()
     robertOld_percentages = robertOld_df['Sentiment'].value_counts(normalize=True) * 100
     
-    return robertOld_df, classfication_cnt, robertOld_percentages
+    return robertOld_df
 
     
-def performSentiandVoting(master_comments_df,comments_df,videoID):
+async def performSentiandVoting(master_comments_df,comments_df,videoID):
     
     comment_ids = list(comments_df['Comment ID'].to_list())
     
     tb_df = comments_df.copy()
-    textBlob_df, tbclassfication_cnt, textBlob_percentages = textblob(tb_df)
-    
     af_df = comments_df.copy()
-    afinn_df, afclassfication_cnt, afinn_percentages = afinn(af_df)
-    
     vd_df = comments_df.copy()
-    vader_df, vclassfication_cnt, vader_percentages = vader(vd_df)
-    
     rbn_df = comments_df.copy()
-    robertNew_df, rbnclassfication_cnt, robertNew_percentages = robert_new(rbn_df)
-    
     rbo_df = comments_df.copy()
-    robertOld_df, rboclassfication_cnt, robertOld_percentages = robert_old(rbo_df)
+    
+    # textBlob_df = await textblob(tb_df)
+    # afinn_df = await afinn(af_df)
+    # vader_df = await vader(vd_df)
+    # robertNew_df = await robert_new(rbn_df)
+    # robertOld_df = await robert_old(rbo_df)
+    results = await asyncio.gather(
+                    textblob(tb_df),
+                    afinn(af_df),
+                    vader(vd_df),
+                    robert_new(rbn_df),
+                    robert_old(rbo_df)
+            )
 
+    textBlob_df, afinn_df, vader_df, robertNew_df, robertOld_df = results
     vote_df = pd.DataFrame()
     for comment_id in comment_ids:
         pos_count = 0
@@ -298,22 +304,17 @@ def performSentiandVoting(master_comments_df,comments_df,videoID):
     return sentiment_df_final
 
 
-def create_comments_json(hlSenti_df, llSenti_df):
+def create_comments_json(hlSenti_df):
 
     comments_json = {
         "Sentiment Metrics": {
-            "Comments Count": {"High Level": str(hlSenti_df.shape[0]), "Low Level": str(llSenti_df.shape[0])},
+            "Comments Count": {"High Level": str(hlSenti_df.shape[0])},
             "Sentiment Percentages": {
                 "High Level Percentages": {
                     "Positive": str(round(hlSenti_df["Sentiment"].value_counts(normalize=True).get("Positive", 0) * 100,2))+" %",
                     "Negative": str(round(hlSenti_df["Sentiment"].value_counts(normalize=True).get("Negative", 0) * 100,2))+" %",
                     "Neutral": str(round(hlSenti_df["Sentiment"].value_counts(normalize=True).get("Neutral", 0) * 100,2))+" %"
                 },
-                "Low Level Percentages": {
-                    "Positive": str(round(llSenti_df["Sentiment"].value_counts(normalize=True).get("Positive", 0) * 100,2))+" %",
-                    "Negative": str(round(llSenti_df["Sentiment"].value_counts(normalize=True).get("Negative", 0) * 100,2))+" %",
-                    "Neutral": str(round(llSenti_df["Sentiment"].value_counts(normalize=True).get("Neutral", 0) * 100,2))+" %"
-                }
             },
             "Sentiment Count": {
                 "High Level Count": {
@@ -321,15 +322,9 @@ def create_comments_json(hlSenti_df, llSenti_df):
                     "Negative": str(hlSenti_df["Sentiment"].value_counts().get("Negative", 0)),
                     "Neutral": str(hlSenti_df["Sentiment"].value_counts().get("Neutral", 0))
                 },
-                "Low Level Count": {
-                    "Positive": str(llSenti_df["Sentiment"].value_counts().get("Positive", 0)),
-                    "Negative": str(llSenti_df["Sentiment"].value_counts().get("Negative", 0)),
-                    "Neutral": str(llSenti_df["Sentiment"].value_counts().get("Neutral", 0))
-                }
             }
         },
         "Comments": {},
-        "All Comments": {}
     }
 
     hl_comments = []
@@ -342,16 +337,6 @@ def create_comments_json(hlSenti_df, llSenti_df):
         hl_comments.append(comment_dict)
     comments_json["Comments"][hlSenti_df["Video ID"].iloc[0]] = hl_comments
 
-    ll_comments = []
-    for index, row in llSenti_df.iterrows():
-        comment_dict = {
-            "Comment ID": row["Comment ID"],
-            "Comment": row["Comments"],
-            "Sentiment": row["Sentiment"]
-        }
-        ll_comments.append(comment_dict)
-    comments_json["All Comments"][llSenti_df["Video ID"].iloc[0]] = ll_comments
-
     json_string = json.dumps(comments_json)
     json_data = json.loads(json_string)
     
@@ -359,27 +344,19 @@ def create_comments_json(hlSenti_df, llSenti_df):
 
 
 
-def performSentilytics(videoID):
+async def performSentilytics(videoID):
 
-    from database import get_FhlComments,get_FllComments
-    from database import get_MhlComments,get_MllComments
+    from database import get_FhlComments
+    from database import get_MhlComments
     
-    comments_df = get_FhlComments(videoID)
-    master_comments_df = get_MhlComments(videoID)
+    comments_df = await get_FhlComments(videoID)
+    master_comments_df = await get_MhlComments(videoID)
 
-    hlSenti_df = performSentiandVoting(master_comments_df,comments_df,videoID)
-    
-    Allcomments_df = get_FllComments(videoID)
-    master_Allcomments_df = get_MllComments(videoID)
-    
-    llSenti_df = performSentiandVoting(master_Allcomments_df,Allcomments_df,videoID)
-    
-    from database import insert_hlSentiComments,insert_llSentiComments
-    
-    insert_hlSentiComments(hlSenti_df)
-    insert_llSentiComments(llSenti_df)
-    
-    return create_comments_json(hlSenti_df, llSenti_df)
+    hlSenti_df = await performSentiandVoting(master_comments_df,comments_df,videoID)
+  
+    from database import insert_hlSentiComments    
+    await insert_hlSentiComments(hlSenti_df)
+
     
     
     

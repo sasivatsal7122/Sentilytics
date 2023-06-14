@@ -1,7 +1,6 @@
 import re
-import numpy as np
 
-def FilterDF(df):
+async def FilterDF(df):
     emoji_pattern = re.compile("["
                                u"\U0001F600-\U0001F64F"  # Emojis
                                u"\U0001F300-\U0001F5FF"  # Symbols & Pictographs

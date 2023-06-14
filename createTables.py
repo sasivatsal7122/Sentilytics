@@ -54,18 +54,7 @@ def createIntialTables():
 
     # Create the OnlyComments_Unfiltered table
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS OnlyComments_Unfiltered (
-            vid_id VARCHAR,
-            comment_id VARCHAR,
-            comment VARCHAR,
-            PRIMARY KEY (vid_id, comment_id),
-            FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
-        )
-    ''')
-
-    # Create the CommentsWithReply_Unfiltered table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS CommentsWithReply_Unfiltered (
+        CREATE TABLE IF NOT EXISTS Comments_Unfiltered (
             vid_id VARCHAR,
             comment_id VARCHAR,
             comment VARCHAR,
@@ -76,18 +65,7 @@ def createIntialTables():
 
     # Create the OnlyComments_filtered table
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS OnlyComments_filtered (
-            vid_id VARCHAR,
-            comment_id VARCHAR,
-            comment VARCHAR,
-            PRIMARY KEY (vid_id, comment_id),
-            FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
-        )
-    ''')
-
-    # Create the CommentsWithReply_filtered table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS CommentsWithReply_filtered (
+        CREATE TABLE IF NOT EXISTS Comments_filtered (
             vid_id VARCHAR,
             comment_id VARCHAR,
             comment VARCHAR,
@@ -109,19 +87,7 @@ def createIntialTables():
 
     # Create the OnlyComments_SentimentAnalysis table
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS OnlyComments_SentimentAnalysis (
-            vid_id VARCHAR,
-            comment_id VARCHAR,
-            comment VARCHAR,
-            sentiment VARCHAR,
-            PRIMARY KEY (vid_id, comment_id),
-            FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
-        )
-    ''')
-
-    # Create the CommentsWithReply_SentimentAnalysis table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS CommentsWithReply_SentimentAnalysis (
+        CREATE TABLE IF NOT EXISTS Comments_SentimentAnalysis (
             vid_id VARCHAR,
             comment_id VARCHAR,
             comment VARCHAR,
