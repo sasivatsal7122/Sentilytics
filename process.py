@@ -13,8 +13,10 @@ import hashlib
 # local imports
 from filterDF import FilterDF
 from database import insert_channel_info,insert_videos_info,\
-    insert_highlvl_cmntInfo,insert_highlvl_filtered_cmntInfo\
-    
+    insert_highlvl_cmntInfo,insert_highlvl_filtered_cmntInfo,\
+    insert_EmojiFreq
+
+from emojiAnalysis import calcEmojiFreq
 
 DEVELOPER_KEY = "AIzaSyD_NG--GtmImIOhDhp-5V6PFPmJhiiZN88"
 YOUTUBE_API_SERVICE_NAME = 'youtube'
@@ -169,6 +171,9 @@ async def scrape_HighLvlcomments(video_id):
       
         
         await insert_highlvl_cmntInfo(HighLvldf)
+        emoji_frequency = await calcEmojiFreq(HighLvldf)
+        await insert_EmojiFreq(video_id,emoji_frequency)
+        
         HighLvldf_filtered = await FilterDF(HighLvldf)
         await insert_highlvl_filtered_cmntInfo(HighLvldf_filtered)
         

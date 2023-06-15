@@ -79,7 +79,6 @@ def createIntialTables():
         CREATE TABLE IF NOT EXISTS Emoji_Frequency (
             vid_id VARCHAR,
             highlvl_freq VARCHAR,
-            all_freq VARCHAR,
             PRIMARY KEY (vid_id),
             FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
         )

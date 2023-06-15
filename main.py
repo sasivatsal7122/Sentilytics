@@ -41,7 +41,6 @@ async def get_hlcomments(background_tasks: BackgroundTasks,channelID: str = Quer
     return JSONResponse(content={"message": "Comments Scraping initiated"})
 
 
-
 async def perform_sentiment_analysis(background_tasks: BackgroundTasks, videoID: str):
     background_tasks.add_task(performSentilytics, videoID)
 

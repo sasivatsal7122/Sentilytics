@@ -134,6 +134,16 @@ async def insert_hlSentiComments(df):
     
     connection.commit()
     connection.close()
+    
+async def insert_EmojiFreq(videoID,freqDict):
+    connection = sqlite3.connect("sentilytics.db")
+    cursor = connection.cursor()
+    
+    freqDictString = str(freqDict)
+    query = "INSERT OR REPLACE INTO Emoji_Frequency (vid_id, highlvl_freq) VALUES (?, ?)"
+    cursor.execute(query, (videoID, freqDictString))
+    connection.commit()
+    connection.close()
 
 
 async def retrieve_comments_by_sentiment(table_name: str, videoID: str, sentiment: str):
@@ -141,7 +151,6 @@ async def retrieve_comments_by_sentiment(table_name: str, videoID: str, sentimen
     cursor = conn.cursor()
 
     query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = ? AND sentiment = ?"
-    print(query)
     cursor.execute(query,(videoID, sentiment))
 
     comments = []
