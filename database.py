@@ -2,6 +2,7 @@ import sqlite3
 from sqlite3 import IntegrityError
 import pandas as pd
 import json
+import datetime
 
 async def insert_channel_info(user_id, channel_id, channel_title, channel_description, subscriber_count, video_count,
                         channel_created_date, channel_logo_url):
@@ -143,6 +144,68 @@ async def insert_EmojiFreq(videoID,freqDict):
     query = "INSERT OR REPLACE INTO Emoji_Frequency (vid_id, highlvl_freq) VALUES (?, ?)"
     cursor.execute(query, (videoID, freqDictString))
     connection.commit()
+    connection.close()
+    
+async def insert_video_rankings(videoID, keyword, video_data):
+    connection = sqlite3.connect("sentilytics.db")
+    cursor = connection.cursor()
+
+    query = '''
+        INSERT OR REPLACE INTO Video_Rankings (
+            vid_id,
+            keyword,
+            results_vidID,
+            results_vidurl,
+            results_vidTitle,
+            results_vidDesc,
+            results_vidDuration,
+            results_vidViewcnt,
+            results_vidDt
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    '''
+    
+    for video in video_data:
+        results_vidID = video["Video ID"]
+        results_vidurl = video["Youtube Link"]
+        results_vidTitle = video["Video Title"]
+        results_vidDesc = video["Description"]
+        
+        duration_str = video["Duration"]
+        
+        try:
+            minutes, seconds = map(int, duration_str.split(":"))
+            
+            if minutes >= 60:
+                hours = minutes // 60
+                minutes %= 60
+                formatted_duration = f"{hours} hours {minutes} minutes {seconds} seconds"
+            else:
+                formatted_duration = f"{minutes} minutes {seconds} seconds"
+        except:
+            formatted_duration = duration_str
+        
+        views_count = video["Views Count"]
+        try:
+            dt_posted = video["Dt Posted"]
+            date_obj = datetime.datetime.strptime(dt_posted, "%Y%m%d")
+            formatted_date = date_obj.strftime("%B %d, %Y")
+        except Exception as e:
+            print(e)
+            formatted_date = video["Dt Posted"]
+        
+        cursor.execute(query, (
+                videoID,
+                keyword,
+                results_vidID,
+                results_vidurl,
+                results_vidTitle,
+                results_vidDesc,
+                formatted_duration,
+                views_count,
+                formatted_date
+            ))
+    connection.commit()    
     connection.close()
 
 

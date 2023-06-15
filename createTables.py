@@ -1,5 +1,4 @@
 import sqlite3
-import re
 
 conn = sqlite3.connect('sentilytics.db')
 cursor = conn.cursor()
@@ -92,6 +91,23 @@ def createIntialTables():
             comment VARCHAR,
             sentiment VARCHAR,
             PRIMARY KEY (vid_id, comment_id),
+            FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
+        )
+    ''')
+    
+    # Create the OnlyComments_SentimentAnalysis table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Video_Rankings (
+            vid_id VARCHAR,
+            keyword VARCHAR,
+            results_vidID VARCHAR,
+            results_vidurl VARCHAR,
+            results_vidTitle VARCHAR,
+            results_vidDesc VARCHAR,
+            results_vidDuration VARCHAR,
+            results_vidViewcnt VARCHAR,
+            results_vidDt VARCHAR,
+            PRIMARY KEY (vid_id, keyword,results_vidID),
             FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
         )
     ''')

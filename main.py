@@ -6,7 +6,9 @@ from process import scrape_channel_info,scrape_HighLvlcomments
 from sentimentAnalysis import performSentilytics
 
 from database import retrieve_comments_by_sentiment,retrieve_all_comments,get_videos_by_channelID\
-                     ,get_user_requests,get_completed_works,get_pending_works,get_videoids_by_channelID
+                     ,get_user_requests,get_completed_works,get_pending_works,get_videoids_by_channelID\
+
+from ytranker import start_videoRanker
 
 app = FastAPI()
 # Create an APIRouter instance for grouping related routes
@@ -55,6 +57,18 @@ async def perform_sentilytics(background_tasks: BackgroundTasks,channelID: str =
         await perform_sentiment_analysis(background_tasks,videoID)
     return JSONResponse(content={"message": "Sentiment Analysis initiated"})
 
+
+async def perform_youtube_ranker(background_tasks: BackgroundTasks, videoID: str, keyword: str):
+    background_tasks.add_task(start_videoRanker, videoID, keyword)
+
+# Define the "perform_youtube_ranker" route
+@router.get("/perform_youtube_ranker/")
+async def perform_youtube_ranker_route(background_tasks: BackgroundTasks, videoID: str = Query(..., description="Video ID"), keyword: str = Query(..., description="Keyword")):
+    """
+    Endpoint to perform YouTube ranking.
+    """
+    await perform_youtube_ranker(background_tasks, videoID, keyword)
+    return JSONResponse(content={"message": "YouTube ranking initiated"})
 
 
 @router.get("/get_videos/")
