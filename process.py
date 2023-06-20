@@ -38,7 +38,7 @@ async def scrape_videos_info(channelID: str):
         'getduration': True,
         'getdescription': True,
         'getuploaddate': True,
-        'playlistend': 10
+        'playlistend': 20
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:

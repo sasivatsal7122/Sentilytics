@@ -10,6 +10,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from scipy.special import softmax
 import csv
 import urllib.request
+import torch
 
 from textblob import TextBlob
 from afinn import Afinn
@@ -146,36 +147,39 @@ async def robert_new(robertNew_df):
     MODEL = "cardiffnlp/twitter-roberta-base-sentiment-latest"
     tokenizer = AutoTokenizer.from_pretrained(MODEL)
 
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL,from_tf=False)
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL, from_tf=False)
 
     robertNew_df['Comments'] = robertNew_df['Comments'].astype(str)
     robertNew_df['Sentiment Scores'] = ''
     robertNew_df['Sentiment'] = ''
 
     for index, row in robertNew_df.iterrows():
-        comment = row['Comments']
-        preprocessed_comment = preprocess_text(comment)
+        try:
+            comment = row['Comments']
+            preprocessed_comment = preprocess_text(comment)
 
-        encoded_input = tokenizer(preprocessed_comment, return_tensors='pt')
-        output = model(**encoded_input)
-        scores = output.logits[0].detach().numpy()
-        scores = softmax(scores)
+            encoded_input = tokenizer(preprocessed_comment, return_tensors='pt', truncation=True, padding=True)
+            output = model(**encoded_input)
+            scores = output.logits[0].detach().numpy()
+            scores = torch.softmax(torch.tensor(scores), dim=0).numpy()
 
-        ranking = np.argsort(scores)
-        ranking = ranking[::-1]
-        for i in range(scores.shape[0]):
-            l = labels[ranking[i]]
-            s = scores[ranking[i]]
-            if i == 0:
-                robertNew_df.at[index, 'Sentiment Scores'] = np.round(float(s), 4)
-                robertNew_df.at[index, 'Sentiment'] = l.title()
-                break
+            ranking = np.argsort(scores)
+            ranking = ranking[::-1]
+            for i in range(scores.shape[0]):
+                l = labels[ranking[i]]
+                s = scores[ranking[i]]
+                if i == 0:
+                    robertNew_df.at[index, 'Sentiment Scores'] = np.round(float(s), 4)
+                    robertNew_df.at[index, 'Sentiment'] = l.title()
+                    break
+        except RuntimeError:
+            print(f"Error occurred for index: {index}. Skipping this iteration...")
+            continue
             
     classfication_cnt = robertNew_df.Sentiment.value_counts()
     robertNew_percentages = robertNew_df['Sentiment'].value_counts(normalize=True) * 100
     
     return robertNew_df
-
 
 async def robert_old(robertOld_df):
     def preprocess_text(text):
@@ -197,32 +201,36 @@ async def robert_old(robertOld_df):
 
     task = 'sentiment'
     MODEL = "cardiffnlp/twitter-roberta-base-sentiment"
-    tokenizer = AutoTokenizer.from_pretrained(MODEL)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL, use_fast=False)
 
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL,from_tf=False)
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL, from_tf=False)
 
     robertOld_df['Comments'] = robertOld_df['Comments'].astype(str)
     robertOld_df['Sentiment Scores'] = ''
     robertOld_df['Sentiment'] = ''
 
     for index, row in robertOld_df.iterrows():
-        comment = row['Comments']
-        preprocessed_comment = preprocess_text(comment)
+        try:
+            comment = row['Comments']
+            preprocessed_comment = preprocess_text(comment)
 
-        encoded_input = tokenizer(preprocessed_comment, return_tensors='pt')
-        output = model(**encoded_input)
-        scores = output.logits[0].detach().numpy()
-        scores = softmax(scores)
+            encoded_input = tokenizer(preprocessed_comment, truncation=True, padding=True, return_tensors='pt')
+            output = model(**encoded_input)
+            scores = output.logits[0].detach().numpy()
+            scores = softmax(scores)
 
-        ranking = np.argsort(scores)
-        ranking = ranking[::-1]
-        for i in range(scores.shape[0]):
-            l = labels[ranking[i]]
-            s = scores[ranking[i]]
-            if i == 0:
-                robertOld_df.at[index, 'Sentiment Scores'] = np.round(float(s), 4)
-                robertOld_df.at[index, 'Sentiment'] = l.title()
-                break
+            ranking = np.argsort(scores)
+            ranking = ranking[::-1]
+            for i in range(scores.shape[0]):
+                l = labels[ranking[i]]
+                s = scores[ranking[i]]
+                if i == 0:
+                    robertOld_df.at[index, 'Sentiment Scores'] = np.round(float(s), 4)
+                    robertOld_df.at[index, 'Sentiment'] = l.title()
+                    break
+        except RuntimeError:
+            print(f"Error occurred for index: {index}. Skipping this iteration...")
+            continue
             
     classfication_cnt = robertOld_df.Sentiment.value_counts()
     robertOld_percentages = robertOld_df['Sentiment'].value_counts(normalize=True) * 100
