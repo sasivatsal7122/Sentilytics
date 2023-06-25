@@ -209,6 +209,15 @@ async def insert_video_rankings(videoID, keyword, video_data):
     connection.close()
 
 
+async def get_channel_name(channel_id):
+    connection = sqlite3.connect('sentilytics.db')
+    cursor = connection.cursor()
+    cursor.execute('SELECT channel_title FROM Channels WHERE channel_id = ?', (channel_id,))
+    result = cursor.fetchone()
+    connection.close()
+    return result[0] if result else None
+
+
 async def retrieve_comments_by_sentiment(table_name: str, videoID: str, sentiment: str):
     conn = sqlite3.connect("sentilytics.db")
     cursor = conn.cursor()

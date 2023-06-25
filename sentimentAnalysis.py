@@ -11,16 +11,18 @@ from scipy.special import softmax
 import csv
 import urllib.request
 import torch
+import concurrent.futures
 
 from textblob import TextBlob
 from afinn import Afinn
 import string
 import asyncio
+from postreq import send_telegram_message
 
-nltk.download('vader_lexicon')
-nltk.download('stopwords')
-nltk.download('punkt')
-nltk.download('wordnet')
+# nltk.download('vader_lexicon')
+# nltk.download('stopwords')
+# nltk.download('punkt')
+# nltk.download('wordnet')
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -29,7 +31,7 @@ warnings.filterwarnings("ignore", message="This TensorFlow binary is optimized t
 warnings.filterwarnings("ignore", message="TF-TRT Warning: Could not find TensorRT")
 warnings.filterwarnings("ignore", message="Some weights of the model checkpoint at cardiffnlp/twitter-roberta-base-sentiment-latest were not used when initializing RobertaForSequenceClassification")
 
-async def vader(vader_df):
+def vader(vader_df):
     vader_df['Comments'] = vader_df['Comments'].astype(str)
     vader_df['Comments'] = vader_df['Comments'].apply(lambda x: ' '.join([w for w in x.split() if len(w)>3]))
     vader_df['Comments'] = vader_df['Comments'].apply(lambda x:x.lower())
@@ -56,7 +58,7 @@ async def vader(vader_df):
     
     return vader_df
 
-async def textblob(textBlob_df):
+def textblob(textBlob_df):
     textBlob_df['Comments'] = textBlob_df['Comments'].astype(str)
     textBlob_df['Sentiment Scores'] = ''
     textBlob_df['Sentiment'] = ''
@@ -93,7 +95,7 @@ async def textblob(textBlob_df):
     
     return textBlob_df
 
-async def afinn(afinn_df):
+def afinn(afinn_df):
     afinn = Afinn()
     afinn_df['Comments'] = afinn_df['Comments'].astype(str)
 
@@ -125,7 +127,7 @@ async def afinn(afinn_df):
     return afinn_df
     
 
-async def robert_new(robertNew_df):
+def robert_new(robertNew_df):
     def preprocess_text(text):
         text = text.lower()    
         text = text.translate(str.maketrans('', '', string.punctuation))    
@@ -181,7 +183,7 @@ async def robert_new(robertNew_df):
     
     return robertNew_df
 
-async def robert_old(robertOld_df):
+def robert_old(robertOld_df):
     def preprocess_text(text):
         text = text.lower()    
         text = text.translate(str.maketrans('', '', string.punctuation))    
@@ -247,21 +249,18 @@ async def performSentiandVoting(master_comments_df,comments_df,videoID):
     vd_df = comments_df.copy()
     rbn_df = comments_df.copy()
     rbo_df = comments_df.copy()
-    
-    # textBlob_df = await textblob(tb_df)
-    # afinn_df = await afinn(af_df)
-    # vader_df = await vader(vd_df)
-    # robertNew_df = await robert_new(rbn_df)
-    # robertOld_df = await robert_old(rbo_df)
-    results = await asyncio.gather(
-                    textblob(tb_df),
-                    afinn(af_df),
-                    vader(vd_df),
-                    robert_new(rbn_df),
-                    robert_old(rbo_df)
-            )
+
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        tb_future = executor.submit(textblob, tb_df)
+        af_future = executor.submit(afinn, af_df)
+        vd_future = executor.submit(vader, vd_df)
+        rbn_future = executor.submit(robert_new, rbn_df)
+        rbo_future = executor.submit(robert_old, rbo_df)
+        
+        results = [tb_future.result(), af_future.result(), vd_future.result(), rbn_future.result(), rbo_future.result()]
 
     textBlob_df, afinn_df, vader_df, robertNew_df, robertOld_df = results
+    
     vote_df = pd.DataFrame()
     for comment_id in comment_ids:
         pos_count = 0
@@ -352,18 +351,22 @@ def create_comments_json(hlSenti_df):
 
 
 
-async def performSentilytics(videoID):
+async def performSentilytics(videoIDs,channelName):
 
     from database import get_FhlComments
     from database import get_MhlComments
     
-    comments_df = await get_FhlComments(videoID)
-    master_comments_df = await get_MhlComments(videoID)
+    for videoID in videoIDs:
+        comments_df = await get_FhlComments(videoID)
+        master_comments_df = await get_MhlComments(videoID)
 
-    hlSenti_df = await performSentiandVoting(master_comments_df,comments_df,videoID)
-  
-    from database import insert_hlSentiComments    
-    await insert_hlSentiComments(hlSenti_df)
+        hlSenti_df = await performSentiandVoting(master_comments_df,comments_df,videoID)
+    
+        from database import insert_hlSentiComments    
+        await insert_hlSentiComments(hlSenti_df)
+        
+    completion_message = f"Sentiment Analysis completed for channel: {channelName}."
+    await send_telegram_message({"text": completion_message})
 
     
     

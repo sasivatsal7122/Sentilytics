@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, Query,HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
+from typing import List
 
 from process import scrape_channel_info,scrape_HighLvlcomments
 
@@ -7,9 +8,10 @@ from sentimentAnalysis import performSentilytics
 
 from database import retrieve_comments_by_sentiment,retrieve_all_comments,get_videos_by_channelID\
                      ,get_user_requests,get_completed_works,get_pending_works,get_videoids_by_channelID\
+                    ,get_channel_name
 
 from ytranker import start_videoRanker
-
+from postreq import send_telegram_message
 app = FastAPI()
 # Create an APIRouter instance for grouping related routes
 router = APIRouter()
@@ -27,6 +29,8 @@ async def scrape_channel(background_tasks: BackgroundTasks,
     """
     Endpoint to scrape channel information.
     """
+    start_message = f"Scraping Channel Info for {channelUsername} initiated. User ID: {userID}"
+    await send_telegram_message({"text": start_message})
     background_tasks.add_task(scrape_channel_info, userID, channelUsername,background_tasks)
     return JSONResponse(content={"message": "Scraping initiated"})
 
@@ -37,14 +41,14 @@ async def get_hlcomments(background_tasks: BackgroundTasks,channelID: str = Quer
     """
     Endpoint to get high-level comments.
     """
+    channelName = await get_channel_name(channelID)
+    start_message = f"Scraping high-level comments initiated for channel: {channelName}."
+    await send_telegram_message({"text": start_message})
+    
     videoIDs = await get_videoids_by_channelID(channelID)
-    for videoID in videoIDs:
-        background_tasks.add_task(scrape_HighLvlcomments, videoID)
+    background_tasks.add_task(scrape_HighLvlcomments, videoIDs, channelName)
     return JSONResponse(content={"message": "Comments Scraping initiated"})
 
-
-async def perform_sentiment_analysis(background_tasks: BackgroundTasks, videoID: str):
-    background_tasks.add_task(performSentilytics, videoID)
 
 # Define the "perform_sentilytics" route
 @router.get("/perform_sentilytics/")
@@ -52,9 +56,12 @@ async def perform_sentilytics(background_tasks: BackgroundTasks,channelID: str =
     """
     Endpoint to perform sentiment analysis on comments.
     """
+    channelName = await get_channel_name(channelID)
+    start_message = f"Sentiment Analysis initiated for channel: {channelName}."
+    await send_telegram_message({"text": start_message})
+    
     videoIDs = await get_videoids_by_channelID(channelID)
-    for videoID in videoIDs:
-        await perform_sentiment_analysis(background_tasks,videoID)
+    background_tasks.add_task(performSentilytics, videoIDs, channelName)
     return JSONResponse(content={"message": "Sentiment Analysis initiated"})
 
 

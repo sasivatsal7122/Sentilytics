@@ -9,6 +9,8 @@ import requests
 import numpy as np
 import json
 import hashlib
+from postreq import send_telegram_message
+
 
 # local imports
 from filterDF import FilterDF
@@ -24,7 +26,7 @@ YOUTUBE_API_VERSION = 'v3'
 youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
 
 
-async def scrape_videos_info(channelID: str):
+async def scrape_videos_info(channelID: str,channelUsername: str):
     """
     Endpoint to get the latest 20 records.
     """    
@@ -75,6 +77,9 @@ async def scrape_videos_info(channelID: str):
     df = pd.DataFrame(video_data)
     await insert_videos_info(df)
     
+    completion_message = f"For Channel: {channelUsername}, Scraping of Channel Info and Videos Info completed"
+    await send_telegram_message({"text": completion_message})
+    
    
 
 async def scrape_channel_info(user_id,channel_username,background_tasks: BackgroundTasks):
@@ -117,7 +122,7 @@ async def scrape_channel_info(user_id,channel_username,background_tasks: Backgro
         channel_info['channel_logo_url']
         )
         print("Channel info inserted into Database successfully")
-        background_tasks.add_task(scrape_videos_info, channel_id)
+        background_tasks.add_task(scrape_videos_info, channel_id,channel_username)
         
     except HttpError as e:
         print(f'An HTTP error occurred: {e}')
@@ -134,57 +139,59 @@ def generate_comment_id(video_id, comment_text):
     return comment_id
 
 
-async def scrape_HighLvlcomments(video_id):
-    
-    try:
-        comments = []
-        response = youtube.commentThreads().list(
-            part='snippet',
-            videoId=video_id,
-            maxResults=100, 
-            textFormat='plainText'
-        ).execute()
+async def scrape_HighLvlcomments(video_ids, channelName):
+    for video_id in video_ids:
+        try:
+            comments = []
+            response = youtube.commentThreads().list(
+                part='snippet',
+                videoId=video_id,
+                maxResults=100, 
+                textFormat='plainText'
+            ).execute()
 
-        while response:
-            for item in response['items']:
-                comment = item['snippet']['topLevelComment']['snippet']
-                text = comment['textDisplay']
-                comments.append(
-                    text
-                )
+            while response:
+                for item in response['items']:
+                    comment = item['snippet']['topLevelComment']['snippet']
+                    text = comment['textDisplay']
+                    comments.append(
+                        text
+                    )
 
-            if 'nextPageToken' in response:
-                next_page_token = response['nextPageToken']
-                response = youtube.commentThreads().list(
-                    part='snippet',
-                    videoId=video_id,
-                    maxResults=100,  
-                    textFormat='plainText',
-                    pageToken=next_page_token
-                ).execute()
-            else:
-                break
-            
-        HighLvldf = pd.DataFrame(comments,columns=['Comments'])
-        HighLvldf['Video ID'] = video_id
-        HighLvldf['Comment ID'] = HighLvldf.apply(lambda row: generate_comment_id(row['Video ID'], row['Comments']), axis=1)
-      
-        
-        await insert_highlvl_cmntInfo(HighLvldf)
-        emoji_frequency = await calcEmojiFreq(HighLvldf)
-        await insert_EmojiFreq(video_id,emoji_frequency)
-        
-        HighLvldf_filtered = await FilterDF(HighLvldf)
-        await insert_highlvl_filtered_cmntInfo(HighLvldf_filtered)
-        
-        # json_data = HighLvldf.groupby('Video ID').apply(lambda x: x[['Comments', 'Comment ID']].to_dict('records')).to_json()
-        # json_data = json.loads(json_data)
-        # return json_data
+                if 'nextPageToken' in response:
+                    next_page_token = response['nextPageToken']
+                    response = youtube.commentThreads().list(
+                        part='snippet',
+                        videoId=video_id,
+                        maxResults=100,  
+                        textFormat='plainText',
+                        pageToken=next_page_token
+                    ).execute()
+                else:
+                    break
                 
-    except HttpError as e:
-        print(f'An HTTP error occurred: {e}')
-        return {'error':f'An HTTP error occurred: {e}'}
-
+            HighLvldf = pd.DataFrame(comments,columns=['Comments'])
+            HighLvldf['Video ID'] = video_id
+            HighLvldf['Comment ID'] = HighLvldf.apply(lambda row: generate_comment_id(row['Video ID'], row['Comments']), axis=1)
+        
+            
+            await insert_highlvl_cmntInfo(HighLvldf)
+            emoji_frequency = await calcEmojiFreq(HighLvldf)
+            await insert_EmojiFreq(video_id,emoji_frequency)
+            
+            HighLvldf_filtered = await FilterDF(HighLvldf)
+            await insert_highlvl_filtered_cmntInfo(HighLvldf_filtered)
+            
+            # json_data = HighLvldf.groupby('Video ID').apply(lambda x: x[['Comments', 'Comment ID']].to_dict('records')).to_json()
+            # json_data = json.loads(json_data)
+            # return json_data
+                    
+        except HttpError as e:
+            print(f'An HTTP error occurred: {e}')
+            return {'error':f'An HTTP error occurred: {e}'}
+    
+    completion_message = f"Scraping of high-level comments completed for channel: {channelName}."
+    await send_telegram_message({"text": completion_message})
     
 # def get_Lowlvlcomments(videoId):
     
