@@ -1,0 +1,4 @@
+Analytics/
+__pycache__/
+Scraped Data Archives/
+*.ipynb
