@@ -19,10 +19,6 @@ import string
 import asyncio
 from postreq import send_telegram_message
 
-# nltk.download('vader_lexicon')
-# nltk.download('stopwords')
-# nltk.download('punkt')
-# nltk.download('wordnet')
 
 import warnings
 warnings.filterwarnings("ignore")

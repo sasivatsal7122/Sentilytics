@@ -10,6 +10,7 @@ COPY requirements.txt .
 # Install project dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY download_resources.py .
 # Copy the entire project directory into the container
 COPY . .
 
@@ -19,5 +20,6 @@ COPY .dockerignore .dockerignore
 # Expose the port your FastAPI application listens on (replace 8000 with your desired port)
 EXPOSE 8000
 
+RUN python download_resources.py
 # Command to run the FastAPI application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

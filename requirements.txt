@@ -16,3 +16,4 @@ tqdm==4.64.1
 transformers==4.29.2
 webdriver_manager==3.8.5
 yt_dlp==2023.6.22
+uvicorn[standard]
