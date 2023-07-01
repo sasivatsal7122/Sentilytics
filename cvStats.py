@@ -144,15 +144,29 @@ async def start_cvStats(channelID,channelName):
         print(e)
         await send_telegram_message({"text": f"Error Scraping Monthly Stats for {channelName} - {str(e)}"})
     
-    try:
-        start_message = f"Video Stats scraping initiated for channel: {channelName}."
-        await send_telegram_message({"text": start_message})
-
-        begin_videoStats(channelID)
-        
-        end_message = f"Video Stats scraping Completed for channel: {channelName}."
-        await send_telegram_message({"text": end_message})
-    except Exception as e:
-        print(e)
-        await send_telegram_message({"text": f"Error Scraping Video Stats for {channelName} - {str(e)}"}) 
+    max_retries = 3
+    retry_delay = 5  
     
+    for retry in range(1, max_retries+1):
+        try:
+            start_message = f"Video Stats scraping initiated for channel: {channelName}."
+            await send_telegram_message({"text": start_message})
+
+            begin_videoStats(channelID)
+
+            end_message = f"Video Stats scraping Completed for channel: {channelName}."
+            await send_telegram_message({"text": end_message})
+
+            print("Video Stats scraping successful!")
+            break
+
+        except Exception as e:
+            print(f"Error scraping Video Stats for {channelName} (Attempt {retry}/{max_retries}): {str(e)}")
+            await send_telegram_message({"text": f"Error Scraping Video Stats for {channelName} - {str(e)}, TRYING AGAIN..."})
+
+            if retry < max_retries:
+                print(f"Retrying after {retry_delay} seconds...")
+                time.sleep(retry_delay)
+            else:
+                print("Maximum number of retries reached. Exiting.")
+                await send_telegram_message({"text": f"Maximum number of retries reached. Exiting. [{channelName}]"})
