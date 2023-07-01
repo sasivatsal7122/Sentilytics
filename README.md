@@ -19,7 +19,7 @@ The base URL for all API endpoints is `http://127.0.0.1:8000`.
     Host: http://127.0.0.1:8000
     ```
 
-### 2. Scrape Channel
+## 2. Scrape Channel
 
 - **Endpoint**: `/scrape_channel/`
 - **Method**: GET
@@ -33,57 +33,59 @@ The base URL for all API endpoints is `http://127.0.0.1:8000`.
     Host: http://127.0.0.1:8000
     ```
 
-### 3. Get Latest 20
+## 3. Scrape High-Level Comments
 
-- **Endpoint**: `/get_latest20/`
+- **Endpoint**: `/scrape_hlcomments/`
 - **Method**: GET
-- **Description**: Retrieves the latest 20 records.
+- **Description**: Retrieves high-level comments for a given channel.
 - **Parameters**:
     - `channelID` (required): Channel ID
 - **Example**:
     ```http
-    GET /get_latest20/?channelID=abcde HTTP/1.1
+    GET /scrape_hlcomments/?channelID=12345 HTTP/1.1
     Host: http://127.0.0.1:8000
     ```
 
-### 4. Get High-Level Comments
-
-- **Endpoint**: `/get_hlcomments/`
-- **Method**: GET
-- **Description**: Retrieves high-level comments for a specific video.
-- **Parameters**:
-    - `videoID` (required): Video ID
-- **Example**:
-    ```http
-    GET /get_hlcomments/?videoID=12345 HTTP/1.1
-    Host: http://127.0.0.1:8000
-    ```
-
-### 5. Get Low-Level Comments
-
-- **Endpoint**: `/get_llcomments/`
-- **Method**: GET
-- **Description**: Retrieves low-level comments for a specific video.
-- **Parameters**:
-    - `videoID` (required): Video ID
-- **Example**:
-    ```http
-    GET /get_llcomments/?videoID=12345 HTTP/1.1
-    Host: http://127.0.0.1:8000
-    ```
-
-### 6. Perform Sentilytics
+## 4. Perform Sentiment Analysis
 
 - **Endpoint**: `/perform_sentilytics/`
 - **Method**: GET
-- **Description**: Performs sentiment analysis on comments for a specific video.
+- **Description**: Performs sentiment analysis on comments for a given channel.
 - **Parameters**:
-    - `videoID` (required): Video ID
+    - `channelID` (required): Channel ID
 - **Example**:
     ```http
-    GET /perform_sentilytics/?videoID=12345 HTTP/1.1
+    GET /perform_sentilytics/?channelID=12345 HTTP/1.1
     Host: http://127.0.0.1:8000
     ```
+
+## 5. Perform YouTube Ranking
+
+- **Endpoint**: `/perform_youtube_ranker/`
+- **Method**: GET
+- **Description**: Initiates YouTube ranking for a specific video and keyword.
+- **Parameters**:
+    - `videoID` (required): Video ID
+    - `keyword` (required): Keyword for ranking
+- **Example**:
+    ```http
+    GET /perform_youtube_ranker/?videoID=12345&keyword=mykeyword HTTP/1.1
+    Host: http://127.0.0.1:8000
+    ```
+
+## 6. Scrape Channel and Video Statistics
+
+- **Endpoint**: `/cvstats/`
+- **Method**: GET
+- **Description**: Performs channel and video statistics for a given channel.
+- **Parameters**:
+    - `channelID` (required): Channel ID
+- **Example**:
+    ```http
+    GET /cvstats/?channelID=12345 HTTP/1.1
+    Host: http://127.0.0.1:8000
+    ```
+    
 ## 7. Get Videos
 
 - **Endpoint**: `/get_videos/`
