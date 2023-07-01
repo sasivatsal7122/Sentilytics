@@ -4,11 +4,11 @@ import pandas as pd
 import json
 import datetime
 
+connection = sqlite3.connect("sentilytics.db")
+cursor = connection.cursor()
+
 async def insert_channel_info(user_id, channel_id, channel_title, channel_description, subscriber_count, video_count,
                         channel_created_date, channel_logo_url):
-    connection = sqlite3.connect("sentilytics.db")
-    cursor = connection.cursor()
-    
     # Inserting the channel information into the Channels table
     try:
         cursor.execute('''
@@ -37,13 +37,10 @@ async def insert_channel_info(user_id, channel_id, channel_title, channel_descri
         pass
     # Commit the changes to the database
     connection.commit()
-    connection.close()
-
+    
 
 async def insert_videos_info(df):
-    connection = sqlite3.connect("sentilytics.db")
-    cursor = connection.cursor()
-
+    
     video_data = df.to_records(index=False)
     try:
         cursor.executemany('''
@@ -66,12 +63,9 @@ async def insert_videos_info(df):
         pass
     
     connection.commit()
-    connection.close()
     
 async def insert_highlvl_cmntInfo(df):
-    connection = sqlite3.connect("sentilytics.db")
-    cursor = connection.cursor()
-
+    
     comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
     try:
         cursor.executemany('''
@@ -81,12 +75,9 @@ async def insert_highlvl_cmntInfo(df):
         pass
     
     connection.commit()
-    connection.close()
     
 async def insert_highlvl_filtered_cmntInfo(df):
-    connection = sqlite3.connect("sentilytics.db")
-    cursor = connection.cursor()
-
+    
     comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
     try:
         cursor.executemany('''
@@ -96,37 +87,30 @@ async def insert_highlvl_filtered_cmntInfo(df):
         pass
         
     connection.commit()
-    connection.close()
     
 async def get_FhlComments(vid_id):
-    conn = sqlite3.connect('sentilytics.db')
 
     query = f"SELECT * FROM Comments_filtered WHERE vid_id = '{vid_id}'"
-    result = conn.execute(query)
+    result = connection.execute(query)
     
     columns = ['Video ID', 'Comment ID', 'Comments']
     data = result.fetchall()
     df = pd.DataFrame(data, columns=columns)
-    conn.close()
     
     return df
     
 async def get_MhlComments(vid_id):
-    conn = sqlite3.connect('sentilytics.db')
 
     query = f"SELECT * FROM Comments_Unfiltered WHERE vid_id = '{vid_id}'"
-    result = conn.execute(query)
+    result = connection.execute(query)
     
     columns = ['Video ID', 'Comment ID', 'Comments']
     data = result.fetchall()
     df = pd.DataFrame(data, columns=columns)
-    conn.close()
-    
+        
     return df
 
 async def insert_hlSentiComments(df):
-    connection = sqlite3.connect("sentilytics.db")
-    cursor = connection.cursor()
 
     comments_data = df[['Video ID', 'Comment ID', 'Comments', 'Sentiment']].to_records(index=False)
     cursor.executemany('''
@@ -134,22 +118,16 @@ async def insert_hlSentiComments(df):
     ''', comments_data)
     
     connection.commit()
-    connection.close()
     
 async def insert_EmojiFreq(videoID,freqDict):
-    connection = sqlite3.connect("sentilytics.db")
-    cursor = connection.cursor()
-    
+      
     freqDictString = str(freqDict)
     query = "INSERT OR REPLACE INTO Emoji_Frequency (vid_id, highlvl_freq) VALUES (?, ?)"
     cursor.execute(query, (videoID, freqDictString))
     connection.commit()
-    connection.close()
     
 async def insert_video_rankings(videoID, keyword, video_data):
-    connection = sqlite3.connect("sentilytics.db")
-    cursor = connection.cursor()
-
+    
     query = '''
         INSERT OR REPLACE INTO Video_Rankings (
             vid_id,
@@ -206,21 +184,47 @@ async def insert_video_rankings(videoID, keyword, video_data):
                 formatted_date
             ))
     connection.commit()    
-    connection.close()
 
+def insert_data_to_video_stats(df):
+    for _, row in df.iterrows():
+        channel_id = row['channel_id']
+        date = row['date']
+        vid_title = row['vid_title']
+        vid_view_cnt = row['vid_view_cnt']
+        vid_comment_cnt = row['vid_comment_cnt']
+        category = row['category']
+
+        # Insert a row into VideoStats table
+        cursor.execute('''
+            INSERT OR REPLACE INTO VideoStats (channel_id, date, vid_title, vid_view_cnt, vid_comment_cnt, category)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (channel_id, date, vid_title, vid_view_cnt, vid_comment_cnt, category))
+    
+    connection.commit()  
+
+def insert_data_to_monthly_stats(df):
+    for _, row in df.iterrows():
+        channel_id = row['channel_id']
+        date = row['date']
+        channel_subs = row['channel_subs']
+        overall_views = row['overall_views']
+
+        # Insert a row into MonthlyStats table
+        cursor.execute('''
+            INSERT OR REPLACE INTO MonthlyStats (channel_id, date, channel_subs, overall_views)
+            VALUES (?, ?, ?, ?)
+        ''', (channel_id, date, channel_subs, overall_views))
+        
+    connection.commit()  
 
 async def get_channel_name(channel_id):
-    connection = sqlite3.connect('sentilytics.db')
-    cursor = connection.cursor()
+    
     cursor.execute('SELECT channel_title FROM Channels WHERE channel_id = ?', (channel_id,))
     result = cursor.fetchone()
-    connection.close()
     return result[0] if result else None
 
 
 async def retrieve_comments_by_sentiment(table_name: str, videoID: str, sentiment: str):
-    conn = sqlite3.connect("sentilytics.db")
-    cursor = conn.cursor()
 
     query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = ? AND sentiment = ?"
     cursor.execute(query,(videoID, sentiment))
@@ -233,15 +237,12 @@ async def retrieve_comments_by_sentiment(table_name: str, videoID: str, sentimen
             "sentiment": row[3]
         }
         comments.append(comment)
-    conn.close()
 
     return  {videoID: comments}
 
 
 async def retrieve_all_comments(table_name: str, videoID: str):
-    conn = sqlite3.connect("sentilytics.db")
-    cursor = conn.cursor()
-
+   
     query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = ?"
     print(query)
     cursor.execute(query, (videoID,))
@@ -252,17 +253,13 @@ async def retrieve_all_comments(table_name: str, videoID: str):
             "comment": row[2],
             "sentiment": row[3]
         }
-        comments.append(comment)
-    
-    conn.close()
+        comments.append(comment)    
 
     return {videoID: comments}
 
 
 async def get_videos_by_channelID(channelID):
-    conn = sqlite3.connect("sentilytics.db")
-    cursor = conn.cursor()
-
+    
     query = "SELECT vid_id, vid_title, vid_view_cnt, vid_like_cnt, vid_comment_cnt, vid_url, vid_desc, vid_duration, vid_published_at, vid_thumbnail FROM Videos WHERE channel_id = ?"
     cursor.execute(query, (channelID,))
     rows = cursor.fetchall()
@@ -283,16 +280,12 @@ async def get_videos_by_channelID(channelID):
         }
         videos[video_id] = video_data
 
-    conn.close()
-
     return {"channelID":channelID, "videos": videos}
 
 
 
 async def get_videoids_by_channelID(channelID):
-    conn = sqlite3.connect("sentilytics.db")
-    cursor = conn.cursor()
-
+    
     query = "SELECT vid_id FROM Videos WHERE channel_id = ?"
     cursor.execute(query, (channelID,))
     rows = cursor.fetchall()
@@ -302,15 +295,11 @@ async def get_videoids_by_channelID(channelID):
         video_id = row[0]
         videos.append(video_id)
         
-    conn.close()
-
     return videos
 
 
 async def get_user_requests(user_id):
-    conn = sqlite3.connect('sentilytics.db')
-    cursor = conn.cursor()
-
+    
     cursor.execute('''
         SELECT * FROM Channels
         WHERE user_id = ?
@@ -323,14 +312,11 @@ async def get_user_requests(user_id):
     for row in rows:
         data.append(dict(zip(columns, row)))
 
-    conn.close()
     json_string = json.dumps(data)
     return json.loads(json_string)
 
 
 async def workProgress_util1(channel_id):
-    conn = sqlite3.connect('sentilytics.db')
-    cursor = conn.cursor()
     
     cursor.execute('''
         SELECT * FROM Videos WHERE channel_id = ?
@@ -365,9 +351,6 @@ async def workProgress_util1(channel_id):
 
 
 async def workProgress_util2(channel_id,tables):
-    
-    conn = sqlite3.connect('sentilytics.db')
-    cursor = conn.cursor()
     
     query_high_level = f'''
         SELECT DISTINCT OU.vid_id, COUNT(OU.comment_id) AS comment_count
@@ -475,10 +458,7 @@ async def get_completed_works(channel_id):
 
 
 async def workPending_util1(channel_id,tables):
-
-    conn = sqlite3.connect('sentilytics.db')
-    cursor = conn.cursor()
-
+    
     query_high_level = f'''
         SELECT DISTINCT OU.vid_id
         FROM {tables[0]} OU
@@ -564,8 +544,6 @@ async def workPending_util1(channel_id,tables):
             }
         }
     }
-
-    conn.close()
 
     return json.loads(json.dumps(pending_data, indent=4))
 

@@ -12,6 +12,7 @@ from database import retrieve_comments_by_sentiment,retrieve_all_comments,get_vi
 
 from ytranker import start_videoRanker
 from postreq import send_telegram_message
+from cvStats import start_cvStats
 app = FastAPI()
 # Create an APIRouter instance for grouping related routes
 router = APIRouter()
@@ -76,6 +77,15 @@ async def perform_youtube_ranker_route(background_tasks: BackgroundTasks, videoI
     """
     await perform_youtube_ranker(background_tasks, videoID, keyword)
     return JSONResponse(content={"message": "YouTube ranking initiated"})
+
+
+@router.get("/cvstats/")
+async def scrape_cvStats(background_tasks: BackgroundTasks,channelID: str = Query(..., description="Channel ID")):
+    """
+    Endpoint to perform Channel and Video Statistics.
+    """
+    background_tasks.add_task(start_cvStats, channelID)
+    return JSONResponse(content={"message": "CV Stats initiated"})
 
 
 @router.get("/get_videos/")

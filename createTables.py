@@ -111,6 +111,31 @@ def createIntialTables():
             FOREIGN KEY (vid_id) REFERENCES Videos(vid_id)
         )
     ''')
+    
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS VideoStats (
+        channel_id VARCHAR,
+        date TIMESTAMP,
+        vid_title VARCHAR,
+        vid_view_cnt VARCHAR,
+        vid_comment_cnt VARCHAR,
+        category VARCHAR,
+        PRIMARY KEY (channel_id, vid_title,category),
+        FOREIGN KEY (channel_id) REFERENCES Channels(channel_id)
+    )
+    ''')
+
+    # Create the MonthlyStats table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS MonthlyStats (
+            channel_id VARCHAR,
+            date TIMESTAMP,
+            channel_subs VARCHAR,
+            overall_views VARCHAR,
+            PRIMARY KEY (channel_id, date),
+            FOREIGN KEY (channel_id) REFERENCES Channels(channel_id)
+        )
+    ''')
 
     # Commit the changes and close the connection
     conn.commit()
