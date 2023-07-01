@@ -84,7 +84,8 @@ async def scrape_cvStats(background_tasks: BackgroundTasks,channelID: str = Quer
     """
     Endpoint to perform Channel and Video Statistics.
     """
-    background_tasks.add_task(start_cvStats, channelID)
+    channelName = await get_channel_name(channelID)
+    background_tasks.add_task(start_cvStats, channelID, channelName)
     return JSONResponse(content={"message": "CV Stats initiated"})
 
 

@@ -10,6 +10,8 @@ import time
 
 # local import
 from database import insert_data_to_monthly_stats,insert_data_to_video_stats
+from postreq import send_telegram_message
+
 
 display = Display(visible=0, size=(800, 600))
 display.start()
@@ -129,7 +131,28 @@ def begin_videoStats(channelID):
     print("Inserted video stats for channel: %s"%(channelID))
     
 
-async def start_cvStats(channelID):
-    begin_monthlyStats(channelID)
-    begin_videoStats(channelID)
-    display.stop()
+async def start_cvStats(channelID,channelName):
+    try:
+        start_message = f"Monthly Stats scraping initiated for channel: {channelName}."
+        await send_telegram_message({"text": start_message})
+        
+        begin_monthlyStats(channelID)
+        
+        end_message = f"Monthly Stats scraping Completed for channel: {channelName}."
+        await send_telegram_message({"text": end_message})
+    except Exception as e:
+        print(e)
+        await send_telegram_message({"text": f"Error Scraping Monthly Stats for {channelName} - {str(e)}"})
+    
+    try:
+        start_message = f"Video Stats scraping initiated for channel: {channelName}."
+        await send_telegram_message({"text": start_message})
+
+        begin_videoStats(channelID)
+        
+        end_message = f"Video Stats scraping Completed for channel: {channelName}."
+        await send_telegram_message({"text": end_message})
+    except Exception as e:
+        print(e)
+        await send_telegram_message({"text": f"Error Scraping Video Stats for {channelName} - {str(e)}"}) 
+    
