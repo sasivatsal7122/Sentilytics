@@ -43,8 +43,8 @@ def get_driver():
     driver.maximize_window()
     return driver
 
-def begin_monthlyStats(channelID):
-    print("Starting monthly stats for channel: %s"%(channelID))
+def begin_monthlyStats(channelID,channelName):
+    print("Starting monthly stats for channel: %s"%(channelName))
     driver = get_driver()
     driver.get(URLS["monthly"]%(channelID))
     target_styles = ['width: 860px; height: 32px; line-height: 32px; background: #f8f8f8;; padding: 0px 20px; color:#444; font-size: 9pt; border-bottom: 1px solid #eee;',
@@ -64,17 +64,17 @@ def begin_monthlyStats(channelID):
             "channel_subs": _[2] +", "+ _[3],
             "overall_views": _[4] +", "+ _[5]
         })
-    print("Finished monthly stats for channel: %s"%(channelID))
+    print("Finished monthly stats for channel: %s"%(channelName))
     driver.quit()
     
     mdf = pd.DataFrame(monthlyStats)
     insert_data_to_monthly_stats(mdf)
-    print("Inserted monthly stats for channel: %s"%(channelID))
+    print("Inserted monthly stats for channel: %s"%(channelName))
 
-def begin_videoStats(channelID):
-    print("Starting video stats for channel: %s"%(channelID))
+def begin_videoStats(channelID,channelName):
+    print("Starting video stats for channel: %s"%(channelName))
     driver = get_driver()
-    driver.get(f"https://socialblade.com/youtube/channel/{channelID}")
+    driver.get(f"https://socialblade.com/youtube/channel/{channelName}")
     wait = WebDriverWait(driver, 10)
     user_videos_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'User Videos')]")))
     user_videos_link.click()
@@ -125,10 +125,10 @@ def begin_videoStats(channelID):
 
     driver.quit()
     
-    print("Finished video stats for channel: %s"%(channelID))
+    print("Finished video stats for channel: %s"%(channelName))
     vdf = pd.DataFrame(videoStats)
     insert_data_to_video_stats(vdf)
-    print("Inserted video stats for channel: %s"%(channelID))
+    print("Inserted video stats for channel: %s"%(channelName))
     
 
 async def start_cvStats(channelID,channelName):
@@ -136,7 +136,7 @@ async def start_cvStats(channelID,channelName):
         start_message = f"Monthly Stats scraping initiated for channel: {channelName}."
         await send_telegram_message({"text": start_message})
         
-        begin_monthlyStats(channelID)
+        begin_monthlyStats(channelID,channelName)
         
         end_message = f"Monthly Stats scraping Completed for channel: {channelName}."
         await send_telegram_message({"text": end_message})
@@ -152,7 +152,7 @@ async def start_cvStats(channelID,channelName):
             start_message = f"Video Stats scraping initiated for channel: {channelName}."
             await send_telegram_message({"text": start_message})
 
-            begin_videoStats(channelID)
+            begin_videoStats(channelID,channelName)
 
             end_message = f"Video Stats scraping Completed for channel: {channelName}."
             await send_telegram_message({"text": end_message})
