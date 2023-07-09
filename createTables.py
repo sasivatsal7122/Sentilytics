@@ -112,6 +112,7 @@ def createIntialTables():
         )
     ''')
     
+    # Create the VideoStats table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS VideoStats (
         channel_id VARCHAR,

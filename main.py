@@ -13,6 +13,10 @@ from database import retrieve_comments_by_sentiment,retrieve_all_comments,get_vi
 from ytranker import start_videoRanker
 from postreq import send_telegram_message
 from cvStats import start_cvStats
+
+from getMethods import get_channel_info,get_monthly_stats,get_video_stats
+
+
 app = FastAPI()
 # Create an APIRouter instance for grouping related routes
 router = APIRouter()
@@ -87,6 +91,30 @@ async def scrape_cvStats(background_tasks: BackgroundTasks,channelID: str = Quer
     channelName = await get_channel_name(channelID)
     background_tasks.add_task(start_cvStats, channelID, channelName)
     return JSONResponse(content={"message": "CV Stats initiated"})
+
+
+# ====  GET METHODS  ====
+
+@app.get("/get_channel_info/")
+async def getChannel_info(channelID: str = Query(..., description="Channel ID")):
+    """
+    Endpoint to get channel information.
+    """
+    return JSONResponse(content=get_channel_info(channelID))
+
+@app.get("/get_monthly_stats/")
+async def getMonthly_stats(channelID: str = Query(..., description="Channel ID")):
+    """
+    Endpoint to get channel information.
+    """
+    return JSONResponse(content=get_monthly_stats(channelID))
+
+@app.get("/get_video_stats/")
+async def getVideo_stats(channelID: str = Query(..., description="Channel ID")):
+    """
+    Endpoint to get channel information.
+    """
+    return JSONResponse(content=get_video_stats(channelID))
 
 
 @router.get("/get_videos/")
