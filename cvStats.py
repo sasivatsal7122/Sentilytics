@@ -12,8 +12,10 @@ import time
 from database import insert_data_to_monthly_stats,insert_data_to_video_stats
 from postreq import send_telegram_message
 
+# set the correct path in production server
+driver_executable_path = "/home/ubuntu/chromedriver"
 
-display = Display(visible=0, size=(800, 600))
+display = Display(visible=0)
 display.start()
 
 URLS = {
@@ -25,22 +27,14 @@ URLS = {
 
 def get_driver():
     options = webdriver.ChromeOptions()
-    user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
-    options.add_argument(f'user-agent={user_agent}')
-    options.add_argument("--window-size=1920,1080")
-    options.add_argument("--incognito")
-    options.add_argument("--ad-block")
-    #options.add_argument('--headless')
-    options.add_argument("--disable-web-security")
-    options.add_argument("--disable-popup-blocking")        
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-plugins-discovery")
     options.add_argument("--no-sandbox")
-    options.add_argument("--disable-setuid-sandbox")
-    options.add_argument("--disable-logging")
     options.add_argument("--disable-dev-shm-usage")
+    
+    options.add_argument("--user-data-dir=/home/ubuntu/.config/google-chrome")
+    options.add_argument("--profile-directory=Default")
     driver = webdriver.Chrome(options=options,use_subprocess=True)
-    driver.maximize_window()
+    # replace with this if you want to use the driver in Pi4
+    #driver = webdriver.Chrome(options=options,driver_executable_pathexecutable_path=driver_executable_path,use_subprocess=True)    
     return driver
 
 def begin_monthlyStats(channelID,channelName):
@@ -74,7 +68,7 @@ def begin_monthlyStats(channelID,channelName):
 def begin_videoStats(channelID,channelName):
     print("Starting video stats for channel: %s"%(channelName))
     driver = get_driver()
-    driver.get(f"https://socialblade.com/youtube/channel/{channelName}")
+    driver.get(f"https://socialblade.com/youtube/channel/{channelID}")
     wait = WebDriverWait(driver, 10)
     user_videos_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'User Videos')]")))
     user_videos_link.click()

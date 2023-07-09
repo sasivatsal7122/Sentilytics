@@ -11,7 +11,6 @@ from scipy.special import softmax
 import csv
 import urllib.request
 import torch
-import concurrent.futures
 
 from textblob import TextBlob
 from afinn import Afinn
@@ -27,7 +26,7 @@ warnings.filterwarnings("ignore", message="This TensorFlow binary is optimized t
 warnings.filterwarnings("ignore", message="TF-TRT Warning: Could not find TensorRT")
 warnings.filterwarnings("ignore", message="Some weights of the model checkpoint at cardiffnlp/twitter-roberta-base-sentiment-latest were not used when initializing RobertaForSequenceClassification")
 
-def vader(vader_df):
+async def vader(vader_df):
     vader_df['Comments'] = vader_df['Comments'].astype(str)
     vader_df['Comments'] = vader_df['Comments'].apply(lambda x: ' '.join([w for w in x.split() if len(w)>3]))
     vader_df['Comments'] = vader_df['Comments'].apply(lambda x:x.lower())
@@ -54,7 +53,7 @@ def vader(vader_df):
     
     return vader_df
 
-def textblob(textBlob_df):
+async def textblob(textBlob_df):
     textBlob_df['Comments'] = textBlob_df['Comments'].astype(str)
     textBlob_df['Sentiment Scores'] = ''
     textBlob_df['Sentiment'] = ''
@@ -91,7 +90,7 @@ def textblob(textBlob_df):
     
     return textBlob_df
 
-def afinn(afinn_df):
+async def afinn(afinn_df):
     afinn = Afinn()
     afinn_df['Comments'] = afinn_df['Comments'].astype(str)
 
@@ -179,62 +178,6 @@ def robert_new(robertNew_df):
     
     return robertNew_df
 
-def robert_old(robertOld_df):
-    def preprocess_text(text):
-        text = text.lower()    
-        text = text.translate(str.maketrans('', '', string.punctuation))    
-        tokens = text.split()
-
-        stop_words = set(stopwords.words('english'))
-        tokens = [word for word in tokens if word not in stop_words]
-        preprocessed_text = ' '.join(tokens)
-
-        return preprocessed_text
-    
-    mapping_link = f"https://raw.githubusercontent.com/cardiffnlp/tweeteval/main/datasets/sentiment/mapping.txt"
-    with urllib.request.urlopen(mapping_link) as f:
-        html = f.read().decode('utf-8').split("\n")
-        csvreader = csv.reader(html, delimiter='\t')
-    labels = [row[1] for row in csvreader if len(row) > 1]
-
-    task = 'sentiment'
-    MODEL = "cardiffnlp/twitter-roberta-base-sentiment"
-    tokenizer = AutoTokenizer.from_pretrained(MODEL, use_fast=False)
-
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL, from_tf=False)
-
-    robertOld_df['Comments'] = robertOld_df['Comments'].astype(str)
-    robertOld_df['Sentiment Scores'] = ''
-    robertOld_df['Sentiment'] = ''
-
-    for index, row in robertOld_df.iterrows():
-        try:
-            comment = row['Comments']
-            preprocessed_comment = preprocess_text(comment)
-
-            encoded_input = tokenizer(preprocessed_comment, truncation=True, padding=True, return_tensors='pt')
-            output = model(**encoded_input)
-            scores = output.logits[0].detach().numpy()
-            scores = softmax(scores)
-
-            ranking = np.argsort(scores)
-            ranking = ranking[::-1]
-            for i in range(scores.shape[0]):
-                l = labels[ranking[i]]
-                s = scores[ranking[i]]
-                if i == 0:
-                    robertOld_df.at[index, 'Sentiment Scores'] = np.round(float(s), 4)
-                    robertOld_df.at[index, 'Sentiment'] = l.title()
-                    break
-        except RuntimeError:
-            print(f"Error occurred for index: {index}. Skipping this iteration...")
-            continue
-            
-    classfication_cnt = robertOld_df.Sentiment.value_counts()
-    robertOld_percentages = robertOld_df['Sentiment'].value_counts(normalize=True) * 100
-    
-    return robertOld_df
-
     
 async def performSentiandVoting(master_comments_df,comments_df,videoID):
     
@@ -243,19 +186,13 @@ async def performSentiandVoting(master_comments_df,comments_df,videoID):
     tb_df = comments_df.copy()
     af_df = comments_df.copy()
     vd_df = comments_df.copy()
-    rbn_df = comments_df.copy()
-    rbo_df = comments_df.copy()
-
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        tb_future = executor.submit(textblob, tb_df)
-        af_future = executor.submit(afinn, af_df)
-        vd_future = executor.submit(vader, vd_df)
-        rbn_future = executor.submit(robert_new, rbn_df)
-        rbo_future = executor.submit(robert_old, rbo_df)
-        
-        results = [tb_future.result(), af_future.result(), vd_future.result(), rbn_future.result(), rbo_future.result()]
-
-    textBlob_df, afinn_df, vader_df, robertNew_df, robertOld_df = results
+    
+    results = await asyncio.gather(
+        textblob(tb_df),
+        afinn(af_df),
+        vader(vd_df),        
+    )
+    textBlob_df, afinn_df, vader_df = results
     
     vote_df = pd.DataFrame()
     for comment_id in comment_ids:
@@ -278,16 +215,6 @@ async def performSentiandVoting(master_comments_df,comments_df,videoID):
         neg_count += sum(afinn_sentiment_pred == 'Negative')
         neu_count += sum(afinn_sentiment_pred == 'Neutral')
         
-        robertNew_sentiment_pred = robertNew_df.loc[robertNew_df['Comment ID'] == comment_id, 'Sentiment'].values
-        pos_count += sum(robertNew_sentiment_pred == 'Positive')
-        neg_count += sum(robertNew_sentiment_pred == 'Negative')
-        neu_count += sum(robertNew_sentiment_pred == 'Neutral')
-        
-        robertOld_sentiment_pred = robertOld_df.loc[robertOld_df['Comment ID'] == comment_id, 'Sentiment'].values
-        pos_count += sum(robertOld_sentiment_pred == 'Positive')
-        neg_count += sum(robertOld_sentiment_pred == 'Negative')
-        neu_count += sum(robertOld_sentiment_pred == 'Neutral')
-
         vote_df = vote_df.append({'Comment ID': comment_id, 'Positive': pos_count, 'Negative': neg_count, 'Neutral': neu_count}, ignore_index=True)
 
     vote_df = vote_df.fillna(0)
