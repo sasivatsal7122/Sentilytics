@@ -18,7 +18,7 @@ async def send_telegram_message(data: dict):
     data["text"] = message
     
     data["chat_id"] = CHAT_ID
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=60) as client:
         response = await client.post(url, json=data)
         print("Bot Response Code:",response.status_code)
 
