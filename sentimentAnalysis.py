@@ -205,6 +205,12 @@ async def performSentiandVoting(master_comments_df,comments_df,videoID):
         neg_count += sum(robert_sentiment_pred == 'Negative')
         neu_count += sum(robert_sentiment_pred == 'Neutral')
         
+        # added bias for robert model, this model constitues 2 points in the voting system
+        robert_sentiment_pred = robert_df.loc[robert_df['Comment ID'] == comment_id, 'Sentiment'].values
+        pos_count += sum(robert_sentiment_pred == 'Positive')
+        neg_count += sum(robert_sentiment_pred == 'Negative')
+        neu_count += sum(robert_sentiment_pred == 'Neutral')
+        
         vote_data.append({'Comment ID': comment_id, 'Positive': [pos_count], 'Neutral': [neu_count], 'Negative': [neg_count]})
         
     vote_df = pd.concat([pd.DataFrame(data) for data in vote_data], ignore_index=True)
