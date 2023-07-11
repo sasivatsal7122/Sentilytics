@@ -34,7 +34,7 @@ def get_driver():
     options.add_argument("--profile-directory=Default")
     driver = webdriver.Chrome(options=options,use_subprocess=True)
     # replace with this if you want to use the driver in Pi4
-    #driver = webdriver.Chrome(options=options,driver_executable_pathexecutable_path=driver_executable_path,use_subprocess=True)    
+    #driver = webdriver.Chrome(options=options,driver_executable_path=driver_executable_path,use_subprocess=True)    
     return driver
 
 def begin_monthlyStats(channelID,channelName):
