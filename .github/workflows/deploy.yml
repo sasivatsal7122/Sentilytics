@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: SSH into Raspberry Pi and deploy
-        uses: appleboy/ssh-action@rspi
+        uses: appleboy/ssh-action@master
         with:
           host: 6.tcp.ngrok.io
           username: ${{ secrets.PI_USERNAME }}
