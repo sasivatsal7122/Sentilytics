@@ -10,11 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
       - name: SSH into Raspberry Pi and deploy
-        uses: appleboy/ssh-action
+        uses: appleboy/ssh-action@rspi
         with:
           host: 6.tcp.ngrok.io
           username: ${{ secrets.PI_USERNAME }}
