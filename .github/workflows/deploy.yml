@@ -1,0 +1,26 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches:
+      - rspi
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: SSH into Raspberry Pi and deploy
+        uses: appleboy/ssh-action
+        with:
+          host: 6.tcp.ngrok.io
+          username: ${{ secrets.PI_USERNAME }}
+          key: ${{ secrets.PI_PRIVATE_KEY }}
+          port: 19020
+          script: |
+            cd /home/sasi/Sentilytics-rspi
+            git pull
+
