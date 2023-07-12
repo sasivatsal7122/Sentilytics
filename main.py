@@ -50,7 +50,7 @@ async def get_hlcomments(background_tasks: BackgroundTasks, channelID: str = Que
     background_tasks.add_task(send_telegram_message, {"text": start_message})
     
     videoIDs = await get_videoids_by_channelID(channelID)
-    background_tasks.add_task(scrape_HighLvlcomments,videoIDs, channelName)
+    background_tasks.add_task(scrape_HighLvlcomments,videoIDs, channelName, channelID)
     return JSONResponse(content={"message": "Comments Scraping initiated"})
 
 

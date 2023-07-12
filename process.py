@@ -9,7 +9,7 @@ import requests
 import numpy as np
 import json
 import hashlib
-from postreq import send_telegram_message
+from postreq import send_telegram_message,make_post_request
 
 
 # local imports
@@ -79,6 +79,7 @@ async def scrape_videos_info(channelID: str,channelUsername: str):
     
     completion_message = f"For Channel: {channelUsername}, Scraping of Channel Info and Videos Info completed"
     await send_telegram_message({"text": completion_message})
+    await make_post_request(f"https://senti.loca.lt/scrape_hlcomments/?channelID={channelID}")
     
    
 
@@ -142,7 +143,7 @@ def generate_comment_id(video_id, comment_text):
     return comment_id
 
 
-async def scrape_HighLvlcomments(video_ids, channelName):
+async def scrape_HighLvlcomments(video_ids, channelName,channelID):
     for video_id in video_ids:
         try:
             comments = []
@@ -195,6 +196,7 @@ async def scrape_HighLvlcomments(video_ids, channelName):
     
     completion_message = f"Scraping of high-level comments completed for channel: {channelName}."
     await send_telegram_message({"text": completion_message})
+    await make_post_request(f"https://senti.loca.lt/perform_sentilytics/?channelID={channelID}")
     
 # def get_Lowlvlcomments(videoId):
     

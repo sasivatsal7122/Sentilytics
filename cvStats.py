@@ -13,7 +13,7 @@ from database import insert_data_to_monthly_stats,insert_data_to_video_stats
 from postreq import send_telegram_message
 
 # set the correct path in production server
-driver_executable_path = "/home/ubuntu/chromedriver"
+driver_executable_path = "/home/sasi/Sentilytics-rspi/chromedriver"
 
 display = Display(visible=0)
 display.start()
@@ -30,11 +30,11 @@ def get_driver():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     
-    options.add_argument("--user-data-dir=/home/ubuntu/.config/google-chrome")
+    options.add_argument("--user-data-dir=/home/sasi/.config/chromium")
     options.add_argument("--profile-directory=Default")
-    driver = webdriver.Chrome(options=options,use_subprocess=True)
+    #driver = webdriver.Chrome(options=options,use_subprocess=True)
     # replace with this if you want to use the driver in Pi4
-    #driver = webdriver.Chrome(options=options,driver_executable_path=driver_executable_path,use_subprocess=True)    
+    driver = webdriver.Chrome(options=options,driver_executable_path=driver_executable_path,use_subprocess=True)    
     return driver
 
 def begin_monthlyStats(channelID,channelName):

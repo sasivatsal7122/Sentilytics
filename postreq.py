@@ -1,9 +1,9 @@
 import httpx
 from datetime import datetime
 
-async def make_post_request(url: str, data: dict):
-    async with httpx.AsyncClient() as client:
-        response = await client.post(url, json=data)
+async def make_post_request(url: str):
+    async with httpx.AsyncClient(timeout=60) as client:
+        response = await client.get(url)
         print(response.status_code)
         
 BOT_ID = "6196937033:AAHYgPHhos1kTSXNGU-CrZ7O0BPpa0ubrSQ"
