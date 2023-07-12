@@ -2,7 +2,7 @@ import httpx
 from datetime import datetime
 
 async def make_post_request(url: str):
-    async with httpx.AsyncClient(timeout=60) as client:
+    async with httpx.AsyncClient(timeout=100) as client:
         response = await client.get(url)
         print(response.status_code)
         
@@ -18,7 +18,7 @@ async def send_telegram_message(data: dict):
     data["text"] = message
     
     data["chat_id"] = CHAT_ID
-    async with httpx.AsyncClient(timeout=60) as client:
+    async with httpx.AsyncClient(timeout=100) as client:
         response = await client.post(url, json=data)
         print("Bot Response Code:",response.status_code)
 

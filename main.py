@@ -38,7 +38,6 @@ async def scrape_channel(background_tasks: BackgroundTasks,
     background_tasks.add_task(scrape_channel_info,userID, channelUsername,background_tasks)
     return JSONResponse(content={"message": "Scraping initiated"})
 
-
 # Define the "get_hlcomments" route
 @router.get("/scrape_hlcomments/")
 async def get_hlcomments(background_tasks: BackgroundTasks, channelID: str = Query(..., description="Channel ID")):
