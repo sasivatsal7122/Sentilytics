@@ -21,3 +21,5 @@ jobs:
             cd /home/sasi/Sentilytics-rspi
             git pull
 
+
+
