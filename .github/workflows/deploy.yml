@@ -15,7 +15,7 @@ jobs:
         with:
           host: 6.tcp.ngrok.io
           username: ${{ secrets.PI_USERNAME }}
-          key: ${{ secrets.PI_PRIVATE_KEY }}
+          password: ${{ secrets.PI_PASSWORD }}
           port: 19020
           script: |
             cd /home/sasi/Sentilytics-rspi
