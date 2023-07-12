@@ -107,7 +107,10 @@ async def scrape_channel_info(user_id,channel_username,background_tasks: Backgro
             channel_info['channel_title'] = channel['snippet']['title']
             channel_info['video_count'] = int(channel['statistics']['videoCount'])
             channel_info['channel_logo_url'] = channel['snippet']['thumbnails']['default']['url']
-            channel_info['channel_created_date'] = datetime.strptime(channel['snippet']['publishedAt'], "%Y-%m-%dT%H:%M:%SZ").strftime("%B %d, %Y")
+            try:
+                channel_info['channel_created_date'] = datetime.strptime(channel['snippet']['publishedAt'], "%Y-%m-%dT%H:%M:%SZ").strftime("%B %d, %Y")
+            except:
+                channel_info['channel_created_date'] = channel['snippet']['publishedAt']
             channel_info['subscriber_count'] = int(channel['statistics']['subscriberCount'])
             channel_info['channel_description'] = channel['snippet']['description']
 
