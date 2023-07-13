@@ -19,6 +19,8 @@ jobs:
           port: 19217
           script: |
             cd /home/sasi/Sentilytics-rspi
+            git update-index --assume-unchanged __pycache__/*
+            git update-index --assume-unchanged sentilytics.db
             git pull
 
 
