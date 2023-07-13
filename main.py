@@ -13,7 +13,8 @@ from ytranker import start_videoRanker
 from postreq import send_telegram_message
 from cvStats import start_cvStats
 
-from getMethods import get_channel_info,get_monthly_stats,get_video_stats
+from getMethods import get_channel_info,get_monthly_stats,get_video_stats,\
+                       get_emoji_analysis
 
 
 app = FastAPI()
@@ -103,16 +104,24 @@ async def getChannel_info(channelID: str = Query(..., description="Channel ID"))
 @app.get("/get_monthly_stats/")
 async def getMonthly_stats(channelID: str = Query(..., description="Channel ID")):
     """
-    Endpoint to get channel information.
+    Endpoint to get monthly statistics information.
     """
     return JSONResponse(content=get_monthly_stats(channelID))
 
 @app.get("/get_video_stats/")
 async def getVideo_stats(channelID: str = Query(..., description="Channel ID")):
     """
-    Endpoint to get channel information.
+    Endpoint to get video statistics information.
     """
     return JSONResponse(content=get_video_stats(channelID))
+
+@app.get("/get_emoji_stats/")
+async def getEmoji_stats(channelID: str = Query(..., description="Channel ID")):
+    """
+    Endpoint to get emoji frequency of 20 videos for a given channel.
+    """
+    return JSONResponse(content=get_emoji_analysis(channelID))
+
 
 
 @router.get("/get_videos/")

@@ -61,4 +61,26 @@ def get_video_stats(channel_id):
 
     return {"Video Stats": video_stats}
 
+def get_emoji_analysis(channel_id):
+
+    cursor.execute('''
+        SELECT v.vid_id, v.vid_title, e.highlvl_freq
+        FROM Videos v
+        INNER JOIN Emoji_Frequency e ON v.vid_id = e.vid_id
+        WHERE v.channel_id = ?
+    ''', (channel_id,))
+    results = cursor.fetchall()
+
+    data = {}
+    for row in results:
+        vid_id, vid_title, highlvl_freq = row
+        if channel_id not in data:
+            data[channel_id] = []
+        data[channel_id].append({
+            'video_id': vid_id,
+            'video_title': vid_title,
+            'emoji_frequency': highlvl_freq
+        })
+
+    return data
 

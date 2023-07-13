@@ -19,3 +19,4 @@ yt_dlp==2023.6.22
 uvicorn[standard]
 PyVirtualDisplay
 undetected-chromedriver
+aiohttp==3.8.4 

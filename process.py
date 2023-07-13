@@ -6,11 +6,9 @@ import yt_dlp
 import pandas as pd
 from datetime import datetime
 import requests
-import numpy as np
-import json
 import hashlib
 from postreq import send_telegram_message,make_post_request
-
+import asyncio
 
 # local imports
 from filterDF import FilterDF
@@ -78,7 +76,7 @@ async def scrape_videos_info(channelID: str,channelUsername: str):
     await insert_videos_info(df)
     
     completion_message = f"For Channel: {channelUsername}, Scraping of Channel Info and Videos Info completed"
-    await send_telegram_message({"text": completion_message})
+    asyncio.create_task(send_telegram_message({"text": completion_message}))
     await make_post_request(f"https://senti.loca.lt/scrape_hlcomments/?channelID={channelID}")
     
    
@@ -195,7 +193,7 @@ async def scrape_HighLvlcomments(video_ids, channelName,channelID):
             return {'error':f'An HTTP error occurred: {e}'}
     
     completion_message = f"Scraping of high-level comments completed for channel: {channelName}."
-    await send_telegram_message({"text": completion_message})
+    asyncio.create_task(send_telegram_message({"text": completion_message}))
     await make_post_request(f"https://senti.loca.lt/perform_sentilytics/?channelID={channelID}")
     
 # def get_Lowlvlcomments(videoId):

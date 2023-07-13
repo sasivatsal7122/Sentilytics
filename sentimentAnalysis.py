@@ -287,7 +287,7 @@ async def performSentilytics(videoIDs,channelName):
         await insert_hlSentiComments(hlSenti_df)
         
     completion_message = f"Sentiment Analysis completed for channel: {channelName}."
-    await send_telegram_message({"text": completion_message})
+    asyncio.create_task(send_telegram_message({"text": completion_message}))
 
     
     
