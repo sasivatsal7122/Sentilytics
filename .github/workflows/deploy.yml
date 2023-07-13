@@ -19,9 +19,8 @@ jobs:
           port: 19217
           script: |
             cd /home/sasi/Sentilytics-rspi
-            git stash
-            git pull
-            git stash pop
+            git pull origin rspi
+            
 
 
 
