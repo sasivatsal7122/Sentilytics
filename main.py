@@ -14,7 +14,7 @@ from postreq import send_telegram_message
 from cvStats import start_cvStats
 
 from getMethods import get_channel_info,get_monthly_stats,get_video_stats,\
-                       get_emoji_analysis
+                       get_emoji_analysis,get_video_comments
 
 
 app = FastAPI()
@@ -122,7 +122,12 @@ async def getEmoji_stats(channelID: str = Query(..., description="Channel ID")):
     """
     return JSONResponse(content=get_emoji_analysis(channelID))
 
-
+@app.get("/get_vid_comments/")
+async def getVid_comments(videoID: str = Query(..., description="Video ID")):
+    """
+    Endpoint to get sentiment analysed comments for a given video.
+    """
+    return JSONResponse(content=get_video_comments(videoID))
 
 @router.get("/get_videos/")
 async def get_videos(channelID: str = Query(..., description="Channel ID")):

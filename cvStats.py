@@ -1,22 +1,28 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-import undetected_chromedriver as webdriver
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
+from selenium import webdriver
+from selenium_stealth import stealth
 from pyvirtualdisplay import Display
 import pandas as pd
+from googleapiclient.discovery import build
 import time
-
+from datetime import datetime
 # local import
 from database import insert_data_to_monthly_stats,insert_data_to_video_stats
 from postreq import send_telegram_message
+from cvutil import getLatest_videos,getMostviewed_videos,getHighestrated_videos
 
 # set the correct path in production server
 driver_executable_path = "/home/sasi/Sentilytics-rspi/chromedriver"
 
-display = Display(visible=0)
-display.start()
+# display = Display(visible=0)
+# display.start()
+
+DEVELOPER_KEY = "AIzaSyD_NG--GtmImIOhDhp-5V6PFPmJhiiZN88"
+YOUTUBE_API_SERVICE_NAME = 'youtube'
+YOUTUBE_API_VERSION = 'v3'
+youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
 
 URLS = {
     "monthly": "https://socialblade.com/youtube/channel/%s/monthly",
@@ -26,15 +32,37 @@ URLS = {
 }
 
 def get_driver():
-    options = webdriver.ChromeOptions()
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
+    options=webdriver.ChromeOptions()
+ 
+    options.add_argument("start-maximized")
+    #options.add_argument("--headless")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--disable-images")
+    options.add_argument("--blink-settings=imagesEnabled=false")
+
+    driver = webdriver.Chrome(options=options)
     
-    options.add_argument("--user-data-dir=/home/sasi/.config/chromium")
-    options.add_argument("--profile-directory=Default")
-    #driver = webdriver.Chrome(options=options,use_subprocess=True)
+    stealth(driver,
+            languages=["en-US", "en"],
+            vendor="Google Inc.",
+            platform="Win32",
+            webgl_vendor="Intel Inc.",
+            renderer="Intel Iris OpenGL Engine",
+            fix_hairline=True,
+        )
+ 
+    
+    # options = uc.ChromeOptions()
+    # options.add_argument("--user-data-dir=/home/satyasasivatsal/.config/google-chrome")
+    # options.add_argument("--profile-directory=Default")
+    # driver = uc.Chrome(options=options,headless=True)
+
     # replace with this if you want to use the driver in Pi4
-    driver = webdriver.Chrome(options=options,driver_executable_path=driver_executable_path,use_subprocess=True)    
+    # options.add_argument("--user-data-dir=/home/sasi/.config/chromium")
+    # options.add_argument("--profile-directory=Default")
+    #driver = webdriver.Chrome(options=options,driver_executable_path=driver_executable_path,use_subprocess=True)    
     return driver
 
 def begin_monthlyStats(channelID,channelName):
@@ -67,60 +95,21 @@ def begin_monthlyStats(channelID,channelName):
 
 def begin_videoStats(channelID,channelName):
     print("Starting video stats for channel: %s"%(channelName))
-    driver = get_driver()
-    driver.get(f"https://socialblade.com/youtube/channel/{channelID}")
-    wait = WebDriverWait(driver, 10)
-    user_videos_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'User Videos')]")))
-    user_videos_link.click()
-
-    subsection_divs = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "subsection")))
+    video_details_ls = []
     
-    videoStats = []
-
-    def util(driver,categ):
-        wait = WebDriverWait(driver, 10)
-        divs = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'div.RowRecentTable')))
-        data = [div.text.split("\n") for div in divs[:20]]
-
-        for _ in data:
-            videoStats.append(
-            {
-                "channel_id": channelID,
-                "date": _[0],
-                "vid_title": _[1],
-                "vid_view_cnt": _[2],
-                "vid_comment_cnt": _[4],
-                "category" : categ
-            })
-            
-    # 20 Latest Videos
-    print("Scraping Latest Video stats")
-    util(driver,"latest")
+    latestVideos = getLatest_videos(channelID)
+    mostviewedVideos = getMostviewed_videos(channelID)
+    highestratedVideos = getHighestrated_videos(channelID)
     
-    # 20 Most Viewed Videos
-    print("Scraping Most Viewed Video stats")
-    action = ActionChains(driver)
-    action.key_down(Keys.CONTROL).click(subsection_divs[1]).key_up(Keys.CONTROL).perform()
-    driver.switch_to.window(driver.window_handles[-1])
-    util(driver,"mostviewed")
-    driver.close()
-    driver.switch_to.window(driver.window_handles[0])
-    time.sleep(5)
-
-    # 50 Most Liked Videos
-    print("Scraping Most Liked Video stats")
-    action = ActionChains(driver)
-    action.key_down(Keys.CONTROL).click(subsection_divs[2]).key_up(Keys.CONTROL).perform()
-    driver.switch_to.window(driver.window_handles[-1])
-    util(driver,"highestrated")
-    driver.close()
-    driver.switch_to.window(driver.window_handles[0])
-    time.sleep(5)
-
-    driver.quit()
+    video_details_ls.extend(latestVideos)
+    video_details_ls.extend(mostviewedVideos)
+    video_details_ls.extend(highestratedVideos)
     
-    print("Finished video stats for channel: %s"%(channelName))
-    vdf = pd.DataFrame(videoStats)
+    vdf = pd.DataFrame(video_details_ls)
+    vdf['channel_id'] = channelID
+    column_order = ['channel_id', 'video_id', 'date', 'title', 'view_count','like_count', 'comment_count', 'category']
+    vdf = vdf[column_order]
+    
     insert_data_to_video_stats(vdf)
     print("Inserted video stats for channel: %s"%(channelName))
     
@@ -164,3 +153,5 @@ async def start_cvStats(channelID,channelName):
             else:
                 print("Maximum number of retries reached. Exiting.")
                 await send_telegram_message({"text": f"Maximum number of retries reached. Exiting. [{channelName}]"})
+
+begin_videoStats("UCsBjURrPoezykLs9EqgamOA","Fireship")

@@ -186,21 +186,14 @@ async def insert_video_rankings(videoID, keyword, video_data):
     connection.commit()    
 
 def insert_data_to_video_stats(df):
-    for _, row in df.iterrows():
-        channel_id = row['channel_id']
-        date = row['date']
-        vid_title = row['vid_title']
-        vid_view_cnt = row['vid_view_cnt']
-        vid_comment_cnt = row['vid_comment_cnt']
-        category = row['category']
-
-        # Insert a row into VideoStats table
-        cursor.execute('''
-            INSERT OR REPLACE INTO VideoStats (channel_id, date, vid_title, vid_view_cnt, vid_comment_cnt, category)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (channel_id, date, vid_title, vid_view_cnt, vid_comment_cnt, category))
-    
-    connection.commit()  
+    values = df[['channel_id', 'video_id', 'date', 'title', 'view_count','like_count', 'comment_count', 'category']].values.tolist()
+    values = [[str(val) if isinstance(val, pd.Timestamp) else val for val in row] for row in values]
+    sql = '''
+        INSERT OR REPLACE INTO VideoStats (channel_id, video_id, date, vid_title, vid_view_cnt, vid_like_cnt, vid_comment_cnt, category)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    '''
+    cursor.executemany(sql, values)
+    connection.commit()
 
 def insert_data_to_monthly_stats(df):
     for _, row in df.iterrows():

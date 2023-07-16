@@ -116,12 +116,14 @@ def createIntialTables():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS VideoStats (
         channel_id VARCHAR,
+        video_id VARCHAR,
         date TIMESTAMP,
         vid_title VARCHAR,
         vid_view_cnt VARCHAR,
+        vid_like_cnt VARCHAR,
         vid_comment_cnt VARCHAR,
         category VARCHAR,
-        PRIMARY KEY (channel_id, vid_title,category),
+        PRIMARY KEY (channel_id,video_id, vid_title,category),
         FOREIGN KEY (channel_id) REFERENCES Channels(channel_id)
     )
     ''')

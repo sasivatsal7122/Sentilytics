@@ -84,3 +84,35 @@ def get_emoji_analysis(channel_id):
 
     return data
 
+def get_video_comments(video_id):
+    
+    query = '''
+        SELECT C.comment_id, C.comment, SA.sentiment
+        FROM Comments_SentimentAnalysis SA
+        LEFT JOIN Comments_Unfiltered C ON SA.vid_id = C.vid_id AND SA.comment_id = C.comment_id
+        WHERE SA.vid_id = ?
+    '''
+
+    cursor.execute(query, (video_id,))
+    rows = cursor.fetchall()
+
+    video_comments = {}
+
+    for row in rows:
+        comment_id = row[0]
+        comment = row[1]
+        sentiment = row[2]
+
+        video_comments[comment_id] = {
+            'Comment': comment,
+            'Sentiment': sentiment
+        }
+
+    conn.close()
+    import json
+    with open(f'{video_id}_comments.json', 'w') as json_file:
+        json.dump({video_id: video_comments}, json_file, indent=4)
+
+    return {video_id: video_comments}
+
+
