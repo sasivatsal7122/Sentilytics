@@ -154,4 +154,3 @@ async def start_cvStats(channelID,channelName):
                 print("Maximum number of retries reached. Exiting.")
                 await send_telegram_message({"text": f"Maximum number of retries reached. Exiting. [{channelName}]"})
 
-begin_videoStats("UCsBjURrPoezykLs9EqgamOA","Fireship")

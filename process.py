@@ -77,7 +77,7 @@ async def scrape_videos_info(channelID: str,channelUsername: str):
     
     completion_message = f"For Channel: {channelUsername}, Scraping of Channel Info and Videos Info completed"
     asyncio.create_task(send_telegram_message({"text": completion_message}))
-    await make_post_request(f"https://senti.loca.lt/scrape_hlcomments/?channelID={channelID}")
+    await make_post_request(f"https://fat-eagle-33.telebit.io/scrape_hlcomments/?channelID={channelID}")
     
    
 
@@ -194,7 +194,7 @@ async def scrape_HighLvlcomments(video_ids, channelName,channelID):
     
     completion_message = f"Scraping of high-level comments completed for channel: {channelName}."
     asyncio.create_task(send_telegram_message({"text": completion_message}))
-    await make_post_request(f"https://senti.loca.lt/perform_sentilytics/?channelID={channelID}")
+    await make_post_request(f"https://fat-eagle-33.telebit.io/perform_sentilytics/?channelID={channelID}")
     
 # def get_Lowlvlcomments(videoId):
     

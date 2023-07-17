@@ -13,10 +13,10 @@ jobs:
       - name: SSH into Raspberry Pi and deploy
         uses: appleboy/ssh-action@master
         with:
-          host: 2.tcp.ngrok.io
+          host: 4.tcp.ngrok.io
           username: ${{ secrets.PI_USERNAME }}
           password: ${{ secrets.PI_PASSWORD }}
-          port: 17778
+          port: 11964
           script: |
             cd /home/sasi/Sentilytics-rspi
             git pull origin rspi
