@@ -7,7 +7,7 @@ async def make_post_request(url: str):
             print(F"GET METHOD STATUS CODE [{url}]:", response.status)
         
 BOT_ID = "6196937033:AAHYgPHhos1kTSXNGU-CrZ7O0BPpa0ubrSQ"
-CHAT_ID = "-836640467"
+CHAT_ID = "919334359"
 
 async def send_telegram_message(data: dict):
     url = f"https://api.telegram.org/bot{BOT_ID}/sendMessage"
