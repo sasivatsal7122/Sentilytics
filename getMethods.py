@@ -1,4 +1,5 @@
 import sqlite3
+import json 
 
 conn = sqlite3.connect('sentilytics.db')
 cursor = conn.cursor()
@@ -13,6 +14,7 @@ def get_channel_info(channel_id):
     for row in channel_data:
         column_names = [description[0] for description in cursor.description]
         channel_info = dict(zip(column_names, row))
+        channel_info['channel_logo_url'] = json.loads(channel_info['channel_logo_url'])
         formatted_data = {channel_id: channel_info}
     
     query = f"SELECT * FROM Videos WHERE channel_id = ?;"
