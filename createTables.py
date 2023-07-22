@@ -24,7 +24,11 @@ def createIntialTables():
             channel_title VARCHAR,
             channel_description VARCHAR,
             subscriber_count INTEGER,
-            video_count INTEGER,
+            total_videos_count INTEGER,
+            total_views_count INTEGER,
+            partial_likes_count INTEGER,
+            partial_comments_count INTEGER,
+            partial_views_count INTEGER,
             channel_created_date TIMESTAMP,
             channel_logo_url VARCHAR,
             PRIMARY KEY (user_id, channel_id),
@@ -136,6 +140,20 @@ def createIntialTables():
             channel_subs VARCHAR,
             overall_views VARCHAR,
             PRIMARY KEY (channel_id, date),
+            FOREIGN KEY (channel_id) REFERENCES Channels(channel_id)
+        )
+    ''')
+    
+    # Create the ScanInfo table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS ScanInfo (
+            channel_id VARCHAR,
+            phase VARCHAR,
+            start_time TIMESTAMP,
+            end_time TIMESTAMP,
+            success BOOLEAN,
+            notes VARCHAR,
+            PRIMARY KEY (channel_id, phase),
             FOREIGN KEY (channel_id) REFERENCES Channels(channel_id)
         )
     ''')

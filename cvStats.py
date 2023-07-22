@@ -9,7 +9,7 @@ from googleapiclient.discovery import build
 import time
 from datetime import datetime
 # local import
-from database import insert_data_to_monthly_stats,insert_data_to_video_stats
+from database import insert_data_to_monthly_stats,insert_data_to_video_stats,get_DevKey
 from postreq import send_telegram_message
 from cvutil import getLatest_videos,getMostviewed_videos,getHighestrated_videos
 
@@ -19,10 +19,8 @@ driver_executable_path = "/home/sasi/Sentilytics-rspi/chromedriver"
 # display = Display(visible=0)
 # display.start()
 
-DEVELOPER_KEY = "AIzaSyD_NG--GtmImIOhDhp-5V6PFPmJhiiZN88"
-YOUTUBE_API_SERVICE_NAME = 'youtube'
-YOUTUBE_API_VERSION = 'v3'
-youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
+DEVELOPER_KEY,YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION = get_DevKey()
+youtube = build(YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
 
 URLS = {
     "monthly": "https://socialblade.com/youtube/channel/%s/monthly",

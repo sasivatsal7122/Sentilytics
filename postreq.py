@@ -1,26 +1,44 @@
+import configparser
 import aiohttp
-from datetime import datetime
+import sqlite3 
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+BOT_ID = str(config['KEYS']['BOT_ID'])
+CHAT_ID = (config['KEYS']['CHAT_ID'])
 
 async def make_post_request(url: str):
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout()) as session:
         async with session.get(url) as response:
             print(F"GET METHOD STATUS CODE [{url}]:", response.status)
-        
-BOT_ID = "6196937033:AAHYgPHhos1kTSXNGU-CrZ7O0BPpa0ubrSQ"
-CHAT_ID = "919334359"
 
-async def send_telegram_message(data: dict):
+async def fetch_scan_info_from_db(channelID):
+    conn = sqlite3.connect('sentilytics.db')  # Replace with your database connection
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * FROM ScanInfo WHERE channel_id = ?', (channelID,))
+    rows = cursor.fetchall()
+
+    message_data = ""
+
+    for row in rows:
+        _, phase, start_time, end_time, _, _ = row
+        message = f"{phase} - Start [{start_time}], End [{end_time}]\n"
+        message_data += message
+
+    return message_data
+
+async def send_telegram_message(channelID: str):
     url = f"https://api.telegram.org/bot{BOT_ID}/sendMessage"
-
-    current_time = datetime.now().strftime("%I:%M%p")
-    current_date = datetime.now().strftime("%d %B, %Y")
-    message = f"{current_time} - {current_date}\n{data['text']}"
-    data["text"] = message
-
-    data["chat_id"] = CHAT_ID
+    
+    message = await fetch_scan_info_from_db(channelID)
+    data = {'text':message,
+            'chat_id':CHAT_ID}
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=100)) as session:
         async with session.post(url, json=data) as response:
-            print("Bot Response Code:", response.status)
+            print("Bot Response Code:", response.status_code)
+
 
 
 # # Make the post request upon completion

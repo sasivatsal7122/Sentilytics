@@ -3,12 +3,45 @@ from sqlite3 import IntegrityError
 import pandas as pd
 import json
 import datetime
+import configparser
+import random
 
 connection = sqlite3.connect("sentilytics.db")
 cursor = connection.cursor()
 
-async def insert_channel_info(user_id, channel_id, channel_title, channel_description, subscriber_count, video_count,
-                        channel_created_date, channel_logo_url):
+
+async def insert_scan_info(channel_id=None, phase=None, is_start=False, success=False, notes=None):
+    current_time = datetime.datetime.now()
+
+    if is_start:
+        cursor.execute('''
+            INSERT OR REPLACE INTO ScanInfo (channel_id, phase, start_time, success, notes)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (channel_id, phase, current_time, success, notes))
+    else:
+        cursor.execute('''
+            UPDATE ScanInfo
+            SET end_time=?, success=?, notes=?
+            WHERE channel_id=? AND phase=?
+        ''', (current_time, success, notes, channel_id, phase))
+
+    connection.commit()
+
+def get_DevKey():
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    
+    developer_keys = config.get('KEYS', 'DEVELOPER_KEY')
+    keys_list = developer_keys.split(',')
+
+    random_key = random.choice(keys_list)
+
+    api_service_name = config.get('KEYS', 'YOUTUBE_API_SERVICE_NAME')
+    api_version = config.get('KEYS', 'YOUTUBE_API_VERSION')
+
+    return random_key, api_service_name, api_version
+
+async def insert_channel_info(user_id, channel_info):
     # Inserting the channel information into the Channels table
     try:
         cursor.execute('''
@@ -18,26 +51,47 @@ async def insert_channel_info(user_id, channel_id, channel_title, channel_descri
                 channel_title,
                 channel_description,
                 subscriber_count,
-                video_count,
+                total_videos_count,
+                total_views_count,
+                partial_likes_count,
+                partial_comments_count,
+                partial_views_count,
                 channel_created_date,
                 channel_logo_url
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             user_id,
-            channel_id,
-            channel_title,
-            channel_description,
-            subscriber_count,
-            video_count,
-            channel_created_date,
-            channel_logo_url
+            channel_info['channel_id'],
+            channel_info['channel_title'],
+            channel_info['channel_description'],
+            channel_info['subscriber_count'],
+            channel_info['total_video_count'],
+            channel_info['total_views_count'],
+            0,
+            0,
+            0,
+            channel_info['channel_created_date'],
+            json.dumps(channel_info['channel_logo_url']),
         ))
     except IntegrityError as e:
         pass
     # Commit the changes to the database
     connection.commit()
     
+
+async def update_channel_partialData(channel_id, partial_likes_count, partial_comments_count, partial_views_count):
+    
+    update_query = '''
+        UPDATE Channels
+        SET partial_likes_count = ?,
+            partial_comments_count = ?,
+            partial_views_count = ?
+        WHERE channel_id = ?
+    '''
+
+    cursor.execute(update_query, (partial_likes_count, partial_comments_count, partial_views_count, channel_id))
+    connection.commit()
 
 async def insert_videos_info(df):
     

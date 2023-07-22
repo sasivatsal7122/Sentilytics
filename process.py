@@ -7,27 +7,26 @@ import pandas as pd
 from datetime import datetime
 import requests
 import hashlib
-from postreq import send_telegram_message,make_post_request
-import asyncio
+from postreq import make_post_request
 
 # local imports
 from filterDF import FilterDF
 from database import insert_channel_info,insert_videos_info,\
     insert_highlvl_cmntInfo,insert_highlvl_filtered_cmntInfo,\
-    insert_EmojiFreq
+    insert_EmojiFreq,update_channel_partialData, get_DevKey, insert_scan_info,\
+    get_channel_name, get_videoids_by_channelID
 
 from emojiAnalysis import calcEmojiFreq
-
-DEVELOPER_KEY = "AIzaSyD_NG--GtmImIOhDhp-5V6PFPmJhiiZN88"
-YOUTUBE_API_SERVICE_NAME = 'youtube'
-YOUTUBE_API_VERSION = 'v3'
-youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
 
 
 async def scrape_videos_info(channelID: str,channelUsername: str):
     """
     Endpoint to get the latest 20 records.
     """    
+    PARTIAL_LIKES_CNT = 0
+    PARTIAL_COMMENTS_CNT = 0
+    PARTIAL_VIEWS_CNT = 0    
+    
     channel_url = f'https://www.youtube.com/channel/{channelID}/videos'
     ydl_opts = {
         'format': 'best',
@@ -72,30 +71,40 @@ async def scrape_videos_info(channelID: str,channelUsername: str):
             'published_at': datetime.strptime(published_at, "%Y%m%d").strftime("%B %d, %Y"),
             'thumbnails': thumbnails[-1]['url']           
     })
+        
+        PARTIAL_LIKES_CNT+=like_count
+        PARTIAL_COMMENTS_CNT+=comment_count
+        PARTIAL_VIEWS_CNT += view_count
+        
     df = pd.DataFrame(video_data)
     await insert_videos_info(df)
+    await update_channel_partialData(channelID,PARTIAL_LIKES_CNT,PARTIAL_COMMENTS_CNT,PARTIAL_VIEWS_CNT)
     
     completion_message = f"For Channel: {channelUsername}, Scraping of Channel Info and Videos Info completed"
-    asyncio.create_task(send_telegram_message({"text": completion_message}))
+    await insert_scan_info(channel_id= channelID, phase="scrape_channel", notes=completion_message,success=True)
     await make_post_request(f"http://0.0.0.0:8000/scrape_hlcomments/?channelID={channelID}")
     
-   
 
 async def scrape_channel_info(user_id,channel_username,background_tasks: BackgroundTasks):
     
+    DEVELOPER_KEY,_,_ = get_DevKey()
     response = requests.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channel_username}&type=channel&key={DEVELOPER_KEY}").json()
     channel_id =  response['items'][0]['id']['channelId']
     channel_info = {
         'channel_id': channel_id,
         'channel_title': '',
-        'video_count': 0,
-        'channel_logo_url': '',
+        'total_video_count': 0,
+        'channel_logo_url': {'logo': '', 'banner': ''},
         'channel_created_date': '',
+        'total_views_count' : '',
         'subscriber_count': 0,
         'channel_description': ''
     }
 
     try:
+        DEVELOPER_KEY,YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION = get_DevKey()
+        youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
+         
         response = youtube.channels().list(
             part='snippet,statistics',
             id=channel_id
@@ -104,8 +113,9 @@ async def scrape_channel_info(user_id,channel_username,background_tasks: Backgro
         if 'items' in response and len(response['items']) > 0:
             channel = response['items'][0]
             channel_info['channel_title'] = channel['snippet']['title']
-            channel_info['video_count'] = int(channel['statistics']['videoCount'])
-            channel_info['channel_logo_url'] = channel['snippet']['thumbnails']['default']['url']
+            channel_info['total_video_count'] = int(channel['statistics']['videoCount'])
+            channel_info['total_views_count'] = int(channel['statistics']['viewCount'])
+            channel_info['channel_logo_url']['logo'] = channel['snippet']['thumbnails']['high']['url']
             try:
                 channel_info['channel_created_date'] = datetime.strptime(channel['snippet']['publishedAt'], "%Y-%m-%dT%H:%M:%SZ").strftime("%B %d, %Y")
             except:
@@ -113,15 +123,17 @@ async def scrape_channel_info(user_id,channel_username,background_tasks: Backgro
             channel_info['subscriber_count'] = int(channel['statistics']['subscriberCount'])
             channel_info['channel_description'] = channel['snippet']['description']
 
+        channel_response = youtube.channels().list(
+            part='brandingSettings',
+            id=channel_id
+        ).execute()
+        
+        banner_url = channel_response['items'][0]['brandingSettings']['image']['bannerExternalUrl']
+        channel_info['channel_logo_url']['banner'] = banner_url
+        
         await insert_channel_info(
         user_id,
-        channel_info['channel_id'],
-        channel_info['channel_title'],
-        channel_info['channel_description'],
-        channel_info['subscriber_count'],
-        channel_info['video_count'],
-        channel_info['channel_created_date'],
-        channel_info['channel_logo_url']
+        channel_info
         )
         print("Channel info inserted into Database successfully")
         background_tasks.add_task(scrape_videos_info, channel_id,channel_username)
@@ -141,7 +153,14 @@ def generate_comment_id(video_id, comment_text):
     return comment_id
 
 
-async def scrape_HighLvlcomments(video_ids, channelName,channelID):
+async def scrape_HighLvlcomments(channelID):
+    
+    channelName = await get_channel_name(channelID)
+    video_ids = await get_videoids_by_channelID(channelID)
+    
+    DEVELOPER_KEY,YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION = get_DevKey()
+    youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
+    
     for video_id in video_ids:
         try:
             comments = []
@@ -193,7 +212,7 @@ async def scrape_HighLvlcomments(video_ids, channelName,channelID):
             return {'error':f'An HTTP error occurred: {e}'}
     
     completion_message = f"Scraping of high-level comments completed for channel: {channelName}."
-    asyncio.create_task(send_telegram_message({"text": completion_message}))
+    await insert_scan_info(channel_id= channelID,phase="scrape_hlcomments", notes=completion_message,success=True)
     await make_post_request(f"http://0.0.0.0:8000/perform_sentilytics/?channelID={channelID}")
     
 # def get_Lowlvlcomments(videoId):

@@ -1,16 +1,15 @@
 from fastapi import FastAPI, APIRouter, Query,HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
-import asyncio
 from process import scrape_channel_info,scrape_HighLvlcomments
+import requests
 
 from sentimentAnalysis import performSentilytics
 
 from database import retrieve_comments_by_sentiment,retrieve_all_comments,get_videos_by_channelID\
-                     ,get_user_requests,get_completed_works,get_pending_works,get_videoids_by_channelID\
-                    ,get_channel_name
+                     ,get_user_requests,get_completed_works,get_pending_works\
+                    ,get_channel_name, insert_scan_info, get_DevKey
 
 from ytranker import start_videoRanker
-from postreq import send_telegram_message
 from cvStats import start_cvStats
 
 from getMethods import get_channel_info,get_monthly_stats,get_video_stats,\
@@ -34,8 +33,12 @@ async def scrape_channel(background_tasks: BackgroundTasks,
     """
     Endpoint to scrape channel information.
     """
-    start_message = f"Scraping Channel Info for {channelUsername} initiated. User ID: {userID}"
-    background_tasks.add_task(send_telegram_message, {"text": start_message})
+    
+    DEVELOPER_KEY,_,_ = get_DevKey()
+    response = requests.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channelUsername}&type=channel&key={DEVELOPER_KEY}").json()
+    channelID =  response['items'][0]['id']['channelId']
+    
+    await insert_scan_info(channel_id=channelID, phase='scrape_channel',is_start=True)
     background_tasks.add_task(scrape_channel_info,userID, channelUsername,background_tasks)
     return JSONResponse(content={"message": "Scraping initiated"})
 
@@ -45,14 +48,10 @@ async def get_hlcomments(background_tasks: BackgroundTasks, channelID: str = Que
     """
     Endpoint to get high-level comments.
     """
-    channelName = await get_channel_name(channelID)
-    start_message = f"Scraping high-level comments initiated for channel: {channelName}."
-    background_tasks.add_task(send_telegram_message, {"text": start_message})
-    
-    videoIDs = await get_videoids_by_channelID(channelID)
-    background_tasks.add_task(scrape_HighLvlcomments,videoIDs, channelName, channelID)
-    return JSONResponse(content={"message": "Comments Scraping initiated"})
 
+    await insert_scan_info(channel_id=channelID, phase='scrape_hlcomments',is_start=True)
+    background_tasks.add_task(scrape_HighLvlcomments,channelID)
+    return JSONResponse(content={"message": "Comments Scraping initiated"})
 
 # Define the "perform_sentilytics" route
 @router.get("/perform_sentilytics/")
@@ -60,12 +59,9 @@ async def perform_sentilytics(background_tasks: BackgroundTasks, channelID: str 
     """
     Endpoint to perform sentiment analysis on comments.
     """
-    channelName = await get_channel_name(channelID)
-    start_message = f"Sentiment Analysis initiated for channel: {channelName}."
-    background_tasks.add_task(send_telegram_message, {"text": start_message})
     
-    videoIDs = await get_videoids_by_channelID(channelID)
-    background_tasks.add_task(performSentilytics,videoIDs, channelName)
+    await insert_scan_info(channel_id=channelID, phase='perform_sentilytics',is_start=True)
+    background_tasks.add_task(performSentilytics, channelID)
     return JSONResponse(content={"message": "Sentiment Analysis initiated"})
 
 
@@ -78,6 +74,7 @@ async def perform_youtube_ranker_route(background_tasks: BackgroundTasks, videoI
     """
     Endpoint to perform YouTube ranking.
     """
+    await insert_scan_info(channel_id=videoID, phase='perform_youtube_ranker',is_start=True)
     await perform_youtube_ranker(background_tasks, videoID, keyword)
     return JSONResponse(content={"message": "YouTube ranking initiated"})
 
@@ -88,6 +85,7 @@ async def scrape_cvStats(background_tasks: BackgroundTasks,channelID: str = Quer
     Endpoint to perform Channel and Video Statistics.
     """
     channelName = await get_channel_name(channelID)
+    await insert_scan_info(channel_id=channelID, phase='cvstats',is_start=True)
     background_tasks.add_task(start_cvStats, channelID, channelName)
     return JSONResponse(content={"message": "CV Stats initiated"})
 

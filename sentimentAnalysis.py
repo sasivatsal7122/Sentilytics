@@ -13,8 +13,10 @@ from textblob import TextBlob
 from afinn import Afinn
 import string
 import asyncio
-from postreq import send_telegram_message
+from database import insert_scan_info
 import warnings
+
+from postreq import send_telegram_message
 
 async def vader(vader_df):
     vader_df['Comments'] = vader_df['Comments'].astype(str)
@@ -272,8 +274,13 @@ def create_comments_json(hlSenti_df):
 
 
 
-async def performSentilytics(videoIDs,channelName):
-
+async def performSentilytics(channelID):
+    
+    from database import get_channel_name,get_videoids_by_channelID
+    
+    channelName = await get_channel_name(channelID)
+    videoIDs = await get_videoids_by_channelID(channelID)
+    
     from database import get_FhlComments
     from database import get_MhlComments
     
@@ -287,8 +294,8 @@ async def performSentilytics(videoIDs,channelName):
         await insert_hlSentiComments(hlSenti_df)
         
     completion_message = f"Sentiment Analysis completed for channel: {channelName}."
-    asyncio.create_task(send_telegram_message({"text": completion_message}))
-
+    await insert_scan_info(channel_id= channelID,phase="perform_sentilytics", notes=completion_message,success=True)
+    await send_telegram_message(channelID)
     
     
     
