@@ -294,7 +294,7 @@ async def performSentilytics(channelID):
         
     completion_message = f"Sentiment Analysis completed for channel: {channelName}."
     await insert_scan_info(channel_id= channelID,phase="perform_sentilytics", notes=completion_message,success=True)
-    await make_post_request(f"http://0.0.0.0:8000/perform_sentilytics/?channelID={channelID}")
+    await make_post_request(f"http://0.0.0.0:8000/cvstats/?channelID={channelID}")
      
     
     
