@@ -1,39 +1,32 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 from selenium_stealth import stealth
-from pyvirtualdisplay import Display
 import pandas as pd
-from googleapiclient.discovery import build
 import time
-from datetime import datetime
-# local import
-from database import insert_data_to_monthly_stats,insert_data_to_video_stats,get_DevKey
+
 from postreq import send_telegram_message
+# local import
+from database import insert_data_to_monthly_stats,insert_data_to_video_stats,insert_scan_info
 from cvutil import getLatest_videos,getMostviewed_videos,getHighestrated_videos
+
+MAX_RETRIES = 3
+RETRY_DELAY = 5  
 
 # set the correct path in production server
 driver_executable_path = "/home/sasi/Sentilytics-rspi/chromedriver"
 
-# display = Display(visible=0)
-# display.start()
-
-DEVELOPER_KEY,YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION = get_DevKey()
-youtube = build(YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
-
 URLS = {
     "monthly": "https://socialblade.com/youtube/channel/%s/monthly",
-    "latest" : "https://socialblade.com/youtube/channel/%s/videos",
-    "mostviewed" : "https://socialblade.com/youtube/channel/%s/mostviewed",
-    "highestrated": "https://socialblade.com/youtube/channel/%s/highestrated"
 }
 
 def get_driver():
     options=webdriver.ChromeOptions()
  
     options.add_argument("start-maximized")
-    #options.add_argument("--headless")
+    options.add_argument("--headless")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
     options.add_argument("--disable-blink-features=AutomationControlled")
@@ -41,26 +34,18 @@ def get_driver():
     options.add_argument("--blink-settings=imagesEnabled=false")
 
     driver = webdriver.Chrome(options=options)
+    #driver = webdriver.Chrome(options=options,service=Service(driver_executable_path)) 
     
     stealth(driver,
             languages=["en-US", "en"],
             vendor="Google Inc.",
-            platform="Win32",
+            platform="Win64",
             webgl_vendor="Intel Inc.",
             renderer="Intel Iris OpenGL Engine",
             fix_hairline=True,
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
         )
- 
-    
-    # options = uc.ChromeOptions()
-    # options.add_argument("--user-data-dir=/home/satyasasivatsal/.config/google-chrome")
-    # options.add_argument("--profile-directory=Default")
-    # driver = uc.Chrome(options=options,headless=True)
 
-    # replace with this if you want to use the driver in Pi4
-    # options.add_argument("--user-data-dir=/home/sasi/.config/chromium")
-    # options.add_argument("--profile-directory=Default")
-    #driver = webdriver.Chrome(options=options,driver_executable_path=driver_executable_path,use_subprocess=True)    
     return driver
 
 def begin_monthlyStats(channelID,channelName):
@@ -113,42 +98,52 @@ def begin_videoStats(channelID,channelName):
     
 
 async def start_cvStats(channelID,channelName):
-    try:
-        start_message = f"Monthly Stats scraping initiated for channel: {channelName}."
-        await send_telegram_message({"text": start_message})
-        
-        begin_monthlyStats(channelID,channelName)
-        
-        end_message = f"Monthly Stats scraping Completed for channel: {channelName}."
-        await send_telegram_message({"text": end_message})
-    except Exception as e:
-        print(e)
-        await send_telegram_message({"text": f"Error Scraping Monthly Stats for {channelName} - {str(e)}"})
-    
-    max_retries = 3
-    retry_delay = 5  
-    
-    for retry in range(1, max_retries+1):
+    for retry in range(1, MAX_RETRIES+1):
         try:
-            start_message = f"Video Stats scraping initiated for channel: {channelName}."
-            await send_telegram_message({"text": start_message})
+            await insert_scan_info(channel_id=channelID,phase="cvstats_monthly",is_start=True)
+        
+            begin_monthlyStats(channelID,channelName)
+            
+            completion_message = f"Monthly Stats scraping Completed for channel: {channelName}."
+            await insert_scan_info(channel_id=channelID,phase="cvstats_monthly",notes=completion_message,success=True)
+            
+            print("Monthly Stats scraping successful!")
+            break
+        
+        except Exception as e:  
+            print(f"Error scraping Monthly Stats for {channelName} (Attempt {retry}/{MAX_RETRIES}): {str(e)}")
+             
+            if retry < MAX_RETRIES:
+                print(f"Retrying after {RETRY_DELAY} seconds...")
+                time.sleep(RETRY_DELAY)
+            else:
+                print("Maximum number of retries reached. Exiting.")
+                error_message = f"Error Scraping Monthly Stats for {channelName} - {str(e)}"
+                await insert_scan_info(channel_id=channelID,phase="cvstats_monthly",notes=error_message,success=False)
+            
+    
+    for retry in range(1, MAX_RETRIES+1):
+        try:
+            await insert_scan_info(channel_id=channelID,phase="cvstats_video",is_start=True)
 
             begin_videoStats(channelID,channelName)
 
-            end_message = f"Video Stats scraping Completed for channel: {channelName}."
-            await send_telegram_message({"text": end_message})
+            completion_message = f"Video Stats scraping Completed for channel: {channelName}."
+            await insert_scan_info(channel_id=channelID,phase="cvstats_video",notes=completion_message,success=True)
 
             print("Video Stats scraping successful!")
             break
 
         except Exception as e:
-            print(f"Error scraping Video Stats for {channelName} (Attempt {retry}/{max_retries}): {str(e)}")
-            await send_telegram_message({"text": f"Error Scraping Video Stats for {channelName} - {str(e)}, TRYING AGAIN..."})
-
-            if retry < max_retries:
-                print(f"Retrying after {retry_delay} seconds...")
-                time.sleep(retry_delay)
+            print(f"Error scraping Video Stats for {channelName} (Attempt {retry}/{MAX_RETRIES}): {str(e)}")
+            
+            if retry < MAX_RETRIES:
+                print(f"Retrying after {RETRY_DELAY} seconds...")
+                time.sleep(RETRY_DELAY)
             else:
                 print("Maximum number of retries reached. Exiting.")
-                await send_telegram_message({"text": f"Maximum number of retries reached. Exiting. [{channelName}]"})
-
+                error_message = f"Error Scraping Video Stats for {channelName} - {str(e)}"
+                await insert_scan_info(channel_id=channelID,phase="cvstats_video",notes=error_message,success=False)
+            
+    await send_telegram_message(channelID, channelName)
+   

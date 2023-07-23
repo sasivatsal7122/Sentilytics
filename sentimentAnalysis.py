@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
 from scipy.special import softmax
-
+from postreq import make_post_request
 
 from textblob import TextBlob
 from afinn import Afinn
@@ -16,7 +16,6 @@ import asyncio
 from database import insert_scan_info
 import warnings
 
-from postreq import send_telegram_message
 
 async def vader(vader_df):
     vader_df['Comments'] = vader_df['Comments'].astype(str)
@@ -295,8 +294,8 @@ async def performSentilytics(channelID):
         
     completion_message = f"Sentiment Analysis completed for channel: {channelName}."
     await insert_scan_info(channel_id= channelID,phase="perform_sentilytics", notes=completion_message,success=True)
-    await send_telegram_message(channelID, channelName)
-    
+    await make_post_request(f"http://0.0.0.0:8000/perform_sentilytics/?channelID={channelID}")
+     
     
     
 
