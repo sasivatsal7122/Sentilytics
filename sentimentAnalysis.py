@@ -295,7 +295,7 @@ async def performSentilytics(channelID):
         
     completion_message = f"Sentiment Analysis completed for channel: {channelName}."
     await insert_scan_info(channel_id= channelID,phase="perform_sentilytics", notes=completion_message,success=True)
-    await send_telegram_message(channelID)
+    await send_telegram_message(channelID, channelName)
     
     
     

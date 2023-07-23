@@ -13,14 +13,14 @@ async def make_post_request(url: str):
         async with session.get(url) as response:
             print(F"GET METHOD STATUS CODE [{url}]:", response.status)
 
-async def fetch_scan_info_from_db(channelID):
+async def fetch_scan_info_from_db(channelID, channelName):
     conn = sqlite3.connect('sentilytics.db')  # Replace with your database connection
     cursor = conn.cursor()
 
     cursor.execute('SELECT * FROM ScanInfo WHERE channel_id = ?', (channelID,))
     rows = cursor.fetchall()
 
-    message_data = ""
+    message_data = f"Channel: {channelName}\n\n"
 
     for row in rows:
         _, phase, start_time, end_time, _, _ = row
@@ -29,10 +29,10 @@ async def fetch_scan_info_from_db(channelID):
 
     return message_data
 
-async def send_telegram_message(channelID: str):
+async def send_telegram_message(channelID: str,channelName: str):
     url = f"https://api.telegram.org/bot{BOT_ID}/sendMessage"
     
-    message = await fetch_scan_info_from_db(channelID)
+    message = await fetch_scan_info_from_db(channelID,channelName)
     data = {'text':message,
             'chat_id':CHAT_ID}
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=100)) as session:
