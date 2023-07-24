@@ -28,6 +28,6 @@ def get_channel_statistics(api_key, channel_id):
         print(f'Error: {e}')
 
 if __name__ == "__main__":
-    API_KEY = "AIzaSyD_NG--GtmImIOhDhp-5V6PFPmJhiiZN88"
+    API_KEY = "AIzaSyC6APVUSvLKRhNMyp5P9eRu56G4i-P2idg"
     CHANNEL_ID = "UCfdNM3NAhaBOXCafH7krzrA"
     get_channel_statistics(API_KEY, CHANNEL_ID)

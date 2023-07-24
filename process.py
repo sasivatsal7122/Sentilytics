@@ -157,11 +157,11 @@ async def scrape_HighLvlcomments(channelID):
     
     channelName = await get_channel_name(channelID)
     video_ids = await get_videoids_by_channelID(channelID)
-    
-    DEVELOPER_KEY,YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION = get_DevKey()
-    youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
-    
+     
     for video_id in video_ids:
+        DEVELOPER_KEY,YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION = get_DevKey()
+        youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
+   
         try:
             comments = []
             response = youtube.commentThreads().list(
