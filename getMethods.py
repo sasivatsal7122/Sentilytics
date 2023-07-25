@@ -26,8 +26,8 @@ def get_channel_info(channel_id):
         video_info = dict(zip(column_names, row))   
         videos.append(video_info)
     
-    formatted_data = {"Channel Info": formatted_data,
-                      "Videos Info": videos}
+    formatted_data = {"channel": formatted_data,
+                      "video": videos}
     return formatted_data
 
 def get_monthly_stats(channel_id):
