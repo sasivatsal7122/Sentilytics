@@ -26,7 +26,7 @@ def get_channel_info(channel_id):
         video_info = dict(zip(column_names, row))   
         videos.append(video_info)
     
-    formatted_data = {"Channel Info": formatted_data,
+    formatted_data = {#"Channel Info": formatted_data,
                       "Videos Info": videos}
     return formatted_data
 
