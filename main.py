@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, Query,HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from process import scrape_channel_info,scrape_HighLvlcomments
 import requests
@@ -17,6 +18,14 @@ from getMethods import get_channel_info,get_monthly_stats,get_video_stats,\
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Create an APIRouter instance for grouping related routes
 router = APIRouter()
 
