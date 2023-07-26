@@ -6,4 +6,4 @@ __pycache__/
 Scraped Data Archives/
 .ipynb_checkpoints/
 sentilytics.db
-
+sentilyticsReplica.db

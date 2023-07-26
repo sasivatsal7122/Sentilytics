@@ -14,7 +14,7 @@ from ytranker import start_videoRanker
 from cvStats import start_cvStats
 
 from getMethods import get_channel_info,get_monthly_stats,get_video_stats,\
-                       get_emoji_analysis,get_video_comments
+                       get_emoji_analysis,get_video_comments,select_data_by_user_id
 
 
 app = FastAPI()
@@ -99,6 +99,13 @@ async def scrape_cvStats(background_tasks: BackgroundTasks,channelID: str = Quer
 
 
 # ====  GET METHODS  ====
+
+@app.get("/get_complete_scan/")
+async def getChannel_info(scanID: str = Query(..., description="Scan ID")):
+    """
+    Endpoint to get all tables information for a given scan/user id.
+    """
+    return JSONResponse(content=select_data_by_user_id(scanID))
 
 @app.get("/get_channel_info/")
 async def getChannel_info(channelID: str = Query(..., description="Channel ID")):
