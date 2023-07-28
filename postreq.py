@@ -37,7 +37,7 @@ async def send_telegram_message(channelID: str,channelName: str):
             'chat_id':CHAT_ID}
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=100)) as session:
         async with session.post(url, json=data) as response:
-            print("Bot Response Code:", response.status_code)
+            print("Bot Response Code:", response.status)
 
 
 
