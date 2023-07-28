@@ -5,16 +5,6 @@ cursor = conn.cursor()
 
 
 def createIntialTables():
-    # Create the Users table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Users (
-            user_id VARCHAR PRIMARY KEY,
-            Username VARCHAR,
-            email VARCHAR,
-            password VARCHAR,
-            created_at TIMESTAMP
-        )
-    ''')
 
     # Create the Channels table
     cursor.execute('''
