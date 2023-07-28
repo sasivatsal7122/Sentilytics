@@ -41,7 +41,7 @@ def getLatest_videos(channelID):
                     'like_count': str(video_like_cnt),
                     'category':'latest'
                 })
-    
+    print(f"len of getLatest_videos {len(video_details)}")
     return video_details
 
 def getMostviewed_videos(channelID):
@@ -86,7 +86,7 @@ def getMostviewed_videos(channelID):
                     'like_count': str(video_like_cnt),
                     'category':'mostviewed'
                 })
-        
+    print(f"len of getMostviewed_videos {len(video_details)}")    
     return video_details
 
 def getHighestrated_videos(channelID):
@@ -132,4 +132,5 @@ def getHighestrated_videos(channelID):
             'category':'highestrated'
         })
     
+    print(f"len of getHighestrated_videos {len(video_details)}")    
     return video_details
