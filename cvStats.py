@@ -97,7 +97,7 @@ def begin_videoStats(channelID,channelName):
     print("Inserted video stats for channel: %s"%(channelName))
     
 
-async def start_cvStats(channelID,channelName):
+async def start_cvStats(scanID, channelID,channelName):
     for retry in range(1, MAX_RETRIES+1):
         try:
             await insert_scan_info(channel_id=channelID,phase="cvstats_monthly",is_start=True)
