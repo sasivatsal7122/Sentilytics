@@ -34,43 +34,49 @@ router = APIRouter()
 async def root():
     return {"message": "Hello World"}
 
-# Define the "scrape_channel" route
-@router.get("/scrape_channel/")
-async def scrape_channel(background_tasks: BackgroundTasks,
-                         userID: str = Query(..., description="User ID"),
-                         channelUsername: str = Query(..., description="Channel Username")):
-    """
-    Endpoint to scrape channel information.
-    """
-    
+# helper function for scrape channel endpoint
+async def scrapeCHannelUtil(scanID, channelUsername,background_tasks):
     DEVELOPER_KEY,_,_ = get_DevKey()
     response = requests.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channelUsername}&type=channel&key={DEVELOPER_KEY}").json()
     channelID =  response['items'][0]['id']['channelId']
     
     await insert_scan_info(channel_id=channelID, phase='scrape_channel',is_start=True)
-    background_tasks.add_task(scrape_channel_info,userID, channelUsername,background_tasks)
+    background_tasks.add_task(scrape_channel_info,scanID, channelUsername,background_tasks)   
+# Define the "scrape_channel" route
+@router.get("/scrape_channel/")
+async def scrape_channel(background_tasks: BackgroundTasks,
+                         scanID: str = Query(..., description="Scan ID"),
+                         channelUsername: str = Query(..., description="Channel Username")):
+    """
+    Endpoint to scrape channel information.
+    """
+    background_tasks.add_task(scrapeCHannelUtil, scanID, channelUsername,background_tasks)
     return JSONResponse(content={"message": "Scraping initiated"})
 
 # Define the "get_hlcomments" route
 @router.get("/scrape_hlcomments/")
-async def get_hlcomments(background_tasks: BackgroundTasks, channelID: str = Query(..., description="Channel ID")):
+async def get_hlcomments(background_tasks: BackgroundTasks,
+                         scanID: str = Query(..., description="Scan ID"),
+                         channelID: str = Query(..., description="Channel ID")):
     """
     Endpoint to get high-level comments.
     """
 
     await insert_scan_info(channel_id=channelID, phase='scrape_hlcomments',is_start=True)
-    background_tasks.add_task(scrape_HighLvlcomments,channelID)
+    background_tasks.add_task(scrape_HighLvlcomments,scanID,channelID)
     return JSONResponse(content={"message": "Comments Scraping initiated"})
 
 # Define the "perform_sentilytics" route
 @router.get("/perform_sentilytics/")
-async def perform_sentilytics(background_tasks: BackgroundTasks, channelID: str = Query(..., description="Channel ID")):
+async def perform_sentilytics(background_tasks: BackgroundTasks, 
+                              scanID: str = Query(..., description="Scan ID"),
+                              channelID: str = Query(..., description="Channel ID")):
     """
     Endpoint to perform sentiment analysis on comments.
     """
     
     await insert_scan_info(channel_id=channelID, phase='perform_sentilytics',is_start=True)
-    background_tasks.add_task(performSentilytics, channelID)
+    background_tasks.add_task(performSentilytics, scanID,channelID)
     return JSONResponse(content={"message": "Sentiment Analysis initiated"})
 
 
@@ -89,12 +95,14 @@ async def perform_youtube_ranker_route(background_tasks: BackgroundTasks, videoI
 
 
 @router.get("/cvstats/")
-async def scrape_cvStats(background_tasks: BackgroundTasks,channelID: str = Query(..., description="Channel ID")):
+async def scrape_cvStats(background_tasks: BackgroundTasks, 
+                         scanID: str = Query(..., description="Scan ID"),
+                         channelID: str = Query(..., description="Channel ID")):
     """
     Endpoint to perform Channel and Video Statistics.
     """
     channelName = await get_channel_name(channelID)
-    background_tasks.add_task(start_cvStats, channelID, channelName)
+    background_tasks.add_task(start_cvStats, scanID, channelID, channelName)
     return JSONResponse(content={"message": "CV Stats initiated"})
 
 
@@ -103,7 +111,7 @@ async def scrape_cvStats(background_tasks: BackgroundTasks,channelID: str = Quer
 @app.get("/get_complete_scan/")
 async def getChannel_info(scanID: str = Query(..., description="Scan ID")):
     """
-    Endpoint to get all tables information for a given scan/user id.
+    Endpoint to get all tables information for a given scan/Scan id.
     """
     return JSONResponse(content=select_data_by_user_id(scanID))
 
@@ -181,11 +189,11 @@ async def get_comments(videoID: str, sentiment: str = None):
         }
 
 @router.get("/get_user_requests/")
-async def get_user_requests(userID: str = Query(..., description="User ID")):
+async def get_user_requests(scanID: str = Query(..., description="Scan ID")):
     """
-    Endpoint to get all the user requests.
+    Endpoint to get all the Scan requests.
     """
-    return JSONResponse(content=get_user_requests(userID))
+    return JSONResponse(content=get_user_requests(scanID))
 
 
 @router.get("/get_completed_works/")
