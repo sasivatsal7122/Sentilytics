@@ -1,10 +1,10 @@
 from googleapiclient.discovery import build
 from database import get_DevKey
 
-DEVELOPER_KEY,YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION = get_DevKey()
-youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
-
 def getLatest_videos(channelID):
+    
+    DEVELOPER_KEY,YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION = get_DevKey()
+    youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
     video_details = []
    
     videos_request = youtube.search().list(
@@ -45,6 +45,9 @@ def getLatest_videos(channelID):
     return video_details
 
 def getMostviewed_videos(channelID):
+    
+    DEVELOPER_KEY,YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION = get_DevKey()
+    youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
     video_details = []
     
     videos_request = youtube.search().list(
@@ -87,6 +90,9 @@ def getMostviewed_videos(channelID):
     return video_details
 
 def getHighestrated_videos(channelID):
+    
+    DEVELOPER_KEY,YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION = get_DevKey()
+    youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
     video_details = []
     
     videos_request = youtube.search().list(
@@ -127,6 +133,3 @@ def getHighestrated_videos(channelID):
         })
     
     return video_details
-
-
-
