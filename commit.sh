@@ -1,11 +1,20 @@
 #!/bin/bash
 
-echo "Enter commit message:"
-read commit_message
+while true; do
+  echo "Enter file name:"
+  read -e -i "" -p "> " file_name
 
-git add .
+  echo "Enter commit message:"
+  read commit_message
 
-git commit -m "$commit_message"
+  git add "$file_name"
+  git commit -m "$commit_message"
 
-git push origin rspi
+  echo "Enter 'c' to continue or 'q' to quit:"
+  read choice
+
+  if [ "$choice" == "q" ]; then
+    break
+  fi
+done
 
