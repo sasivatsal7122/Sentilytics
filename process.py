@@ -19,7 +19,7 @@ from database import insert_channel_info,insert_videos_info,\
 from emojiAnalysis import calcEmojiFreq
 
 
-async def scrape_videos_info(channelID: str,channelUsername: str):
+async def scrape_videos_info(scanID: str,channelID: str,channelUsername: str):
     """
     Endpoint to get the latest 20 records.
     """    
@@ -37,7 +37,7 @@ async def scrape_videos_info(channelID: str,channelUsername: str):
         'getduration': True,
         'getdescription': True,
         'getuploaddate': True,
-        'playlistend': 20
+        'playlistend': 2
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -82,10 +82,10 @@ async def scrape_videos_info(channelID: str,channelUsername: str):
     
     completion_message = f"For Channel: {channelUsername}, Scraping of Channel Info and Videos Info completed"
     await insert_scan_info(channel_id= channelID, phase="scrape_channel", notes=completion_message,success=True)
-    await make_post_request(f"http://0.0.0.0:8000/scrape_hlcomments/?channelID={channelID}")
+    await make_post_request(f"http://0.0.0.0:8000/scrape_hlcomments/?scanID={scanID}&channelID={channelID}")
     
 
-async def scrape_channel_info(user_id,channel_username,background_tasks: BackgroundTasks):
+async def scrape_channel_info(scanID,channel_username,background_tasks: BackgroundTasks):
     
     DEVELOPER_KEY,_,_ = get_DevKey()
     response = requests.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channel_username}&type=channel&key={DEVELOPER_KEY}").json()
@@ -132,11 +132,11 @@ async def scrape_channel_info(user_id,channel_username,background_tasks: Backgro
         channel_info['channel_logo_url']['banner'] = banner_url
         
         await insert_channel_info(
-        user_id,
+        scanID,
         channel_info
         )
         print("Channel info inserted into Database successfully")
-        background_tasks.add_task(scrape_videos_info, channel_id,channel_username)
+        background_tasks.add_task(scrape_videos_info,scanID, channel_id,channel_username)
         
     except HttpError as e:
         print(f'An HTTP error occurred: {e}')
@@ -153,7 +153,7 @@ def generate_comment_id(video_id, comment_text):
     return comment_id
 
 
-async def scrape_HighLvlcomments(channelID):
+async def scrape_HighLvlcomments(scanID, channelID):
     
     channelName = await get_channel_name(channelID)
     video_ids = await get_videoids_by_channelID(channelID)
@@ -213,7 +213,7 @@ async def scrape_HighLvlcomments(channelID):
     
     completion_message = f"Scraping of high-level comments completed for channel: {channelName}."
     await insert_scan_info(channel_id= channelID,phase="scrape_hlcomments", notes=completion_message,success=True)
-    await make_post_request(f"http://0.0.0.0:8000/perform_sentilytics/?channelID={channelID}")
+    await make_post_request(f"http://0.0.0.0:8000/perform_sentilytics/?scanID={scanID}&channelID={channelID}")
     
 # def get_Lowlvlcomments(videoId):
     
