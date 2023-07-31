@@ -131,7 +131,7 @@ def select_data_by_user_id(user_id):
         return [row[0] for row in result]
     
     channel_id = get_channel_id_by_user_id(cursor, user_id)
-    
+
     if not channel_id:
         conn.close()
         return None
@@ -139,33 +139,57 @@ def select_data_by_user_id(user_id):
     data_dict = {}
 
     cursor.execute("SELECT * FROM Channels WHERE channel_id=?", (channel_id,))
-    data_dict['Channels'] = cursor.fetchall()
+    channel_columns = [column[0] for column in cursor.description]
+
+    cursor.execute("SELECT * FROM Channels WHERE channel_id=?", (channel_id,))
+    channel_data = cursor.fetchone()
+    data_dict['Channels'] = dict(zip(channel_columns, channel_data))
 
     video_ids = get_video_ids_by_channel_id(cursor, channel_id)
 
     cursor.execute("SELECT * FROM Videos WHERE vid_id IN ({})".format(','.join(['?'] * len(video_ids))), video_ids)
-    data_dict['Videos'] = cursor.fetchall()
+    video_columns = [column[0] for column in cursor.description]
+
+    cursor.execute("SELECT * FROM Videos WHERE vid_id IN ({})".format(','.join(['?'] * len(video_ids))), video_ids)
+    video_data = cursor.fetchall()
+    data_dict['Videos'] = [dict(zip(video_columns, row)) for row in video_data]
 
     for table_name in ['Emoji_Frequency', 'Video_Rankings', 'VideoStats']:
         if table_name == 'VideoStats':
             cursor.execute("SELECT * FROM {} WHERE video_id IN ({})".format(table_name, ','.join(['?'] * len(video_ids))), video_ids)
-            data_dict[table_name] = cursor.fetchall()
+            table_columns = [column[0] for column in cursor.description]
+            table_data = cursor.fetchall()
+            data_dict[table_name] = [dict(zip(table_columns, row)) for row in table_data]
         else:
             cursor.execute("SELECT * FROM {} WHERE vid_id IN ({})".format(table_name, ','.join(['?'] * len(video_ids))), video_ids)
-            data_dict[table_name] = cursor.fetchall()
+            table_columns = [column[0] for column in cursor.description]
+            table_data = cursor.fetchall()
+            data_dict[table_name] = [dict(zip(table_columns, row)) for row in table_data]
 
     sentiment_data = []
     for vid_id in video_ids:
         cursor.execute("SELECT * FROM Comments_SentimentAnalysis WHERE vid_id=?", (vid_id,))
         sentiment_data.extend(cursor.fetchall())
-    data_dict['Comments_SentimentAnalysis'] = sentiment_data
+    sentiment_columns = [column[0] for column in cursor.description]
+    data_dict['Comments_SentimentAnalysis'] = [dict(zip(sentiment_columns, row)) for row in sentiment_data]
 
     cursor.execute("SELECT * FROM MonthlyStats WHERE channel_id=?", (channel_id,))
-    data_dict['MonthlyStats'] = cursor.fetchall()
+    monthly_stats_columns = [column[0] for column in cursor.description]
+
+    cursor.execute("SELECT * FROM MonthlyStats WHERE channel_id=?", (channel_id,))
+    monthly_stats_data = cursor.fetchall()
+    data_dict['MonthlyStats'] = [dict(zip(monthly_stats_columns, row)) for row in monthly_stats_data]
 
     cursor.execute("SELECT * FROM ScanInfo WHERE channel_id=?", (channel_id,))
-    data_dict['ScanInfo'] = cursor.fetchall()
+    scan_info_columns = [column[0] for column in cursor.description]
 
+    cursor.execute("SELECT * FROM ScanInfo WHERE channel_id=?", (channel_id,))
+    scan_info_data = cursor.fetchall()
+    data_dict['ScanInfo'] = [dict(zip(scan_info_columns, row)) for row in scan_info_data]
+
+    with open('data.json', 'w') as json_file:
+        json.dump(data_dict, json_file, indent=4)
+    
     return data_dict
 
 def insert_data_into_tables(data):
@@ -232,4 +256,3 @@ def insert_data_into_tables(data):
                        (row[0], row[1], row[2], row[3], row[4], row[5]))
 
     conn.commit()
-    
