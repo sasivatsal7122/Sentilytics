@@ -110,7 +110,6 @@ def get_video_comments(video_id):
             'Sentiment': sentiment
         }
 
-    conn.close()
     import json
     with open(f'{video_id}_comments.json', 'w') as json_file:
         json.dump({video_id: video_comments}, json_file, indent=4)
@@ -133,7 +132,6 @@ def select_data_by_user_id(user_id):
     channel_id = get_channel_id_by_user_id(cursor, user_id)
 
     if not channel_id:
-        conn.close()
         return None
 
     data_dict = {}
