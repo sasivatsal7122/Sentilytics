@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, Query,HTTPException, BackgroundTasks
+from fastapi import FastAPI, APIRouter, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from process import scrape_channel_info,scrape_HighLvlcomments
@@ -6,16 +6,15 @@ import requests
 
 from sentimentAnalysis import performSentilytics
 
-from database import retrieve_comments_by_sentiment,retrieve_all_comments,get_videos_by_channelID\
-                     ,get_user_requests,get_completed_works,get_pending_works\
-                    ,get_channel_name, insert_scan_info, get_DevKey
+from database import get_channel_name, insert_scan_info, get_DevKey
 
 from ytranker import start_videoRanker
 from cvStats import start_cvStats
 
 from getMethods import get_channel_info,get_monthly_stats,get_video_stats,\
-                       get_emoji_analysis,get_video_comments,select_data_by_user_id
+                       get_emoji_analysis,select_data_by_scan_id
 
+from make_replication import makeReplication
 
 app = FastAPI()
 
@@ -42,6 +41,7 @@ async def scrapeCHannelUtil(scanID, channelUsername,background_tasks):
     
     await insert_scan_info(channel_id=channelID, phase='scrape_channel',is_start=True)
     background_tasks.add_task(scrape_channel_info,scanID, channelUsername,background_tasks)   
+
 # Define the "scrape_channel" route
 @router.get("/scrape_channel/")
 async def scrape_channel(background_tasks: BackgroundTasks,
@@ -105,6 +105,14 @@ async def scrape_cvStats(background_tasks: BackgroundTasks,
     background_tasks.add_task(start_cvStats, scanID, channelID, channelName)
     return JSONResponse(content={"message": "CV Stats initiated"})
 
+@router.get("/make_replica/")
+async def scrape_cvStats(scanID: str = Query(..., description="Scan ID")):
+    """
+    Endpoint to make data replication for a given scan/Scan id.
+    """
+    await insert_scan_info(channel_id=scanID, phase='make_replica',is_start=True)
+    await makeReplication(scanID)
+    return JSONResponse(content={"message": "Replication Done"})
 
 # ====  GET METHODS  ====
 
@@ -113,7 +121,7 @@ async def getChannel_info(scanID: str = Query(..., description="Scan ID")):
     """
     Endpoint to get all tables information for a given scan/Scan id.
     """
-    return JSONResponse(content=select_data_by_user_id(scanID))
+    return JSONResponse(content=select_data_by_scan_id(scanID))
 
 @app.get("/get_channel_info/")
 async def getChannel_info(channelID: str = Query(..., description="Channel ID")):
@@ -142,75 +150,6 @@ async def getEmoji_stats(channelID: str = Query(..., description="Channel ID")):
     Endpoint to get emoji frequency of 20 videos for a given channel.
     """
     return JSONResponse(content=get_emoji_analysis(channelID))
-
-@app.get("/get_vid_comments/")
-async def getVid_comments(videoID: str = Query(..., description="Video ID")):
-    """
-    Endpoint to get sentiment analysed comments for a given video.
-    """
-    return JSONResponse(content=get_video_comments(videoID))
-
-@router.get("/get_videos/")
-async def get_videos(channelID: str = Query(..., description="Channel ID")):
-    """
-    Endpoint to perform sentiment analysis on comments.
-    """
-    video_result = get_videos_by_channelID(channelID)
-    return JSONResponse(content=video_result)
-
-@app.get("/get_comments/")
-async def get_comments(videoID: str, sentiment: str = None):
-    
-    # Determine the table name based on the query parameters
-    
-    table_name = "Comments_SentimentAnalysis"
-    videoID = videoID
-
-    # Retrieve comments from the table based on the sentiment parameter
-    if sentiment:
-        if sentiment not in ["positive", "negative", "neutral"]:
-            raise HTTPException(status_code=400, detail="Invalid value for 'sentiment' parameter.")
-        sentiment = sentiment.title()
-        comments = retrieve_comments_by_sentiment(table_name, videoID, sentiment)
-        count = len(comments[videoID])
-        return {"count": count, "comments": comments}
-    else:
-        comments = retrieve_all_comments(table_name, videoID)
-        positive_count = len([c for c in comments[videoID] if c["sentiment"] == "Positive"])
-        negative_count = len([c for c in comments[videoID] if c["sentiment"] == "Negative"])
-        neutral_count = len([c for c in comments[videoID] if c["sentiment"] == "Neutral"])
-        return {
-            
-            "positive_count": positive_count,
-            "negative_count": negative_count,
-            "neutral_count": neutral_count,
-            "total_count": len(comments[videoID]),
-            "comments":comments,
-        }
-
-@router.get("/get_user_requests/")
-async def get_user_requests(scanID: str = Query(..., description="Scan ID")):
-    """
-    Endpoint to get all the Scan requests.
-    """
-    return JSONResponse(content=get_user_requests(scanID))
-
-
-@router.get("/get_completed_works/")
-async def get_completed_works(channelID: str = Query(..., description="Channel ID")):
-    """
-    Endpoint to get work progress for a given channelID
-    """
-    return JSONResponse(content=get_completed_works(channelID))
-
-
-@router.get("/get_pending_works/")
-async def get_completed_works(channelID: str = Query(..., description="Channel ID")):
-    """
-    Endpoint to get pending works for a given channelID
-    """
-    return JSONResponse(content=get_pending_works(channelID))
-
 
 # Include the router in the main app
 app.include_router(router)
