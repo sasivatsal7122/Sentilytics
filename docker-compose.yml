@@ -1,11 +1,34 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  sentilytics:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+  db:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: sentilytics
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
     volumes:
-      - ./sentilytics.db:/app/sentilytics.db
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  db_replica:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: sentireplica
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    volumes:
+      - mysql-data-replica:/var/lib/mysql
+    ports:
+      - "3307:3306"
+
+volumes:
+  mysql-data:
+  mysql-data-replica:
