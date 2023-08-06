@@ -7,10 +7,10 @@ from selenium_stealth import stealth
 import pandas as pd
 import time
 
-from postreq import send_telegram_message
 # local import
 from database import insert_data_to_monthly_stats,insert_data_to_video_stats,insert_scan_info
 from cvutil import getLatest_videos,getMostviewed_videos,getHighestrated_videos
+from postreq import make_post_request
 
 MAX_RETRIES = 3
 RETRY_DELAY = 5  
@@ -145,5 +145,5 @@ async def start_cvStats(scanID, channelID,channelName):
                 error_message = f"Error Scraping Video Stats for {channelName} - {str(e)}"
                 await insert_scan_info(channel_id=channelID,phase="cvstats_video",notes=error_message,success=False)
             
-    await send_telegram_message(channelID, channelName)
-   
+    await make_post_request(f"http://0.0.0.0:8000/make_replica/?scanID={scanID}")
+    
