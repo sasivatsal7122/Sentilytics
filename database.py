@@ -1,31 +1,20 @@
-import sqlite3
-from sqlite3 import IntegrityError
+import pymysql
 import pandas as pd
 import json
 import datetime
 import configparser
 import random
 
-connection = sqlite3.connect("sentilytics.db")
+conn_params = {
+    "host": "127.0.0.1",
+    "port": 3306,                # Change to your MySQL port if necessary
+    "user": "admin",
+    "password": "admin",
+    "db": "sentilytics",
+}
+
+connection = pymysql.connect(**conn_params)
 cursor = connection.cursor()
-
-
-async def insert_scan_info(channel_id=None, phase=None, is_start=False, success=False, notes=None):
-    current_time = datetime.datetime.now()
-
-    if is_start:
-        cursor.execute('''
-            INSERT OR REPLACE INTO ScanInfo (channel_id, phase, start_time, success, notes)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (channel_id, phase, current_time, success, notes))
-    else:
-        cursor.execute('''
-            UPDATE ScanInfo
-            SET end_time=?, success=?, notes=?
-            WHERE channel_id=? AND phase=?
-        ''', (current_time, success, notes, channel_id, phase))
-
-    connection.commit()
 
 def get_DevKey():
     config = configparser.ConfigParser()
@@ -41,16 +30,36 @@ def get_DevKey():
 
     return random_key, api_service_name, api_version
 
-async def insert_channel_info(user_id, channel_info):
-    # Inserting the channel information into the Channels table
+
+async def insert_scan_info(channel_id=None, phase=None, is_start=False, success=False, notes=None):
+    
+    current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    if is_start:
+        cursor.execute('''
+            INSERT INTO ScanInfo (channel_id, phase, start_time, success, notes)
+            VALUES (%s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE start_time=%s, success=%s, notes=%s
+        ''', (channel_id, phase, current_time, success, notes, current_time, success, notes))
+    else:
+        cursor.execute('''
+            UPDATE ScanInfo
+            SET end_time=%s, success=%s, notes=%s
+            WHERE channel_id=%s AND phase=%s
+        ''', (current_time, success, notes, channel_id, phase))
+        
+    connection.commit()
+
+async def insert_channel_info(scan_id, channel_info):
+   
     try:
         cursor.execute('''
-            INSERT OR REPLACE INTO Channels (
-                user_id,
+            INSERT INTO Channels (
+                scan_id,
                 channel_id,
                 channel_title,
                 channel_description,
-                subscriber_count,
+                total_subs_count,
                 total_videos_count,
                 total_views_count,
                 partial_likes_count,
@@ -59,9 +68,18 @@ async def insert_channel_info(user_id, channel_info):
                 channel_created_date,
                 channel_logo_url
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                scan_id=VALUES(scan_id),
+                channel_title=VALUES(channel_title),
+                channel_description=VALUES(channel_description),
+                total_subs_count=VALUES(total_subs_count),
+                total_videos_count=VALUES(total_videos_count),
+                total_views_count=VALUES(total_views_count),
+                channel_created_date=VALUES(channel_created_date),
+                channel_logo_url=VALUES(channel_logo_url)
         ''', (
-            user_id,
+            scan_id,
             channel_info['channel_id'],
             channel_info['channel_title'],
             channel_info['channel_description'],
@@ -74,31 +92,32 @@ async def insert_channel_info(user_id, channel_info):
             channel_info['channel_created_date'],
             json.dumps(channel_info['channel_logo_url']),
         ))
-    except IntegrityError as e:
+    except pymysql.IntegrityError as e:
         pass
-    # Commit the changes to the database
+
     connection.commit()
     
-
 async def update_channel_partialData(channel_id, partial_likes_count, partial_comments_count, partial_views_count):
     
     update_query = '''
         UPDATE Channels
-        SET partial_likes_count = ?,
-            partial_comments_count = ?,
-            partial_views_count = ?
-        WHERE channel_id = ?
+        SET partial_likes_count = %s,
+            partial_comments_count = %s,
+            partial_views_count = %s
+        WHERE channel_id = %s
     '''
 
     cursor.execute(update_query, (partial_likes_count, partial_comments_count, partial_views_count, channel_id))
     connection.commit()
-
-async def insert_videos_info(df):
     
+async def insert_videos_info(df):
     video_data = df.to_records(index=False)
+
     try:
+        video_data_tuples = [tuple(record) for record in video_data]
+
         cursor.executemany('''
-            INSERT OR REPLACE INTO Videos (
+            INSERT INTO Videos (
                 channel_id,
                 vid_id,
                 vid_title,
@@ -111,79 +130,69 @@ async def insert_videos_info(df):
                 vid_published_at,
                 vid_thumbnail
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', video_data)
-    except IntegrityError as e:
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                vid_title=VALUES(vid_title),
+                vid_view_cnt=VALUES(vid_view_cnt),
+                vid_like_cnt=VALUES(vid_like_cnt),
+                vid_comment_cnt=VALUES(vid_comment_cnt),
+                vid_url=VALUES(vid_url),
+                vid_desc=VALUES(vid_desc),
+                vid_duration=VALUES(vid_duration),
+                vid_published_at=VALUES(vid_published_at),
+                vid_thumbnail=VALUES(vid_thumbnail)
+        ''', video_data_tuples)
+    except pymysql.IntegrityError as e:
         pass
-    
+
     connection.commit()
+
     
 async def insert_highlvl_cmntInfo(df):
-    
     comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
+    comments_data_tuples = [tuple(record) for record in comments_data]
     try:
         cursor.executemany('''
-            INSERT OR REPLACE INTO Comments_Unfiltered (vid_id, comment_id, comment) VALUES (?, ?, ?)
-        ''', comments_data)
-    except IntegrityError as e:
+            INSERT INTO Comments_Unfiltered (vid_id, comment_id, comment) VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE comment=VALUES(comment)
+        ''', comments_data_tuples)
+    except pymysql.IntegrityError as e:
         pass
-    
+
     connection.commit()
     
 async def insert_highlvl_filtered_cmntInfo(df):
-    
     comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
+    comments_data_tuples = [tuple(record) for record in comments_data]
     try:
         cursor.executemany('''
-            INSERT OR REPLACE INTO Comments_filtered (vid_id, comment_id, comment) VALUES (?, ?, ?)
-        ''', comments_data)
-    except IntegrityError as e:
+            INSERT INTO Comments_filtered (vid_id, comment_id, comment) VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE comment=VALUES(comment)
+        ''', comments_data_tuples)
+    except pymysql.IntegrityError as e:
         pass
-        
+
     connection.commit()
-    
-async def get_FhlComments(vid_id):
-
-    query = f"SELECT * FROM Comments_filtered WHERE vid_id = '{vid_id}'"
-    result = connection.execute(query)
-    
-    columns = ['Video ID', 'Comment ID', 'Comments']
-    data = result.fetchall()
-    df = pd.DataFrame(data, columns=columns)
-    
-    return df
-    
-async def get_MhlComments(vid_id):
-
-    query = f"SELECT * FROM Comments_Unfiltered WHERE vid_id = '{vid_id}'"
-    result = connection.execute(query)
-    
-    columns = ['Video ID', 'Comment ID', 'Comments']
-    data = result.fetchall()
-    df = pd.DataFrame(data, columns=columns)
-        
-    return df
 
 async def insert_hlSentiComments(df):
-
     comments_data = df[['Video ID', 'Comment ID', 'Comments', 'Sentiment']].to_records(index=False)
+    comments_data_tuples = [tuple(record) for record in comments_data]
     cursor.executemany('''
-        INSERT OR REPLACE INTO Comments_SentimentAnalysis (vid_id, comment_id, comment, sentiment) VALUES (?, ?, ?, ?)
-    ''', comments_data)
+        INSERT INTO Comments_SentimentAnalysis (vid_id, comment_id, comment, sentiment) VALUES (%s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE comment=VALUES(comment), sentiment=VALUES(sentiment)
+    ''', comments_data_tuples)
     
     connection.commit()
-    
-async def insert_EmojiFreq(videoID,freqDict):
-      
+
+async def insert_EmojiFreq(videoID, freqDict):
     freqDictString = str(freqDict)
-    query = "INSERT OR REPLACE INTO Emoji_Frequency (vid_id, highlvl_freq) VALUES (?, ?)"
+    query = "INSERT INTO Emoji_Frequency (vid_id, highlvl_freq) VALUES (%s, %s) ON DUPLICATE KEY UPDATE highlvl_freq=VALUES(highlvl_freq)"
     cursor.execute(query, (videoID, freqDictString))
     connection.commit()
     
 async def insert_video_rankings(videoID, keyword, video_data):
-    
     query = '''
-        INSERT OR REPLACE INTO Video_Rankings (
+        INSERT INTO Video_Rankings (
             vid_id,
             keyword,
             results_vidID,
@@ -194,20 +203,28 @@ async def insert_video_rankings(videoID, keyword, video_data):
             results_vidViewcnt,
             results_vidDt
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+            results_vidID=VALUES(results_vidID),
+            results_vidurl=VALUES(results_vidurl),
+            results_vidTitle=VALUES(results_vidTitle),
+            results_vidDesc=VALUES(results_vidDesc),
+            results_vidDuration=VALUES(results_vidDuration),
+            results_vidViewcnt=VALUES(results_vidViewcnt),
+            results_vidDt=VALUES(results_vidDt)
     '''
-    
+
     for video in video_data:
         results_vidID = video["Video ID"]
         results_vidurl = video["Youtube Link"]
         results_vidTitle = video["Video Title"]
         results_vidDesc = video["Description"]
-        
+
         duration_str = video["Duration"]
-        
+
         try:
             minutes, seconds = map(int, duration_str.split(":"))
-            
+
             if minutes >= 60:
                 hours = minutes // 60
                 minutes %= 60
@@ -216,7 +233,7 @@ async def insert_video_rankings(videoID, keyword, video_data):
                 formatted_duration = f"{minutes} minutes {seconds} seconds"
         except:
             formatted_duration = duration_str
-        
+
         views_count = video["Views Count"]
         try:
             dt_posted = video["Dt Posted"]
@@ -225,26 +242,33 @@ async def insert_video_rankings(videoID, keyword, video_data):
         except Exception as e:
             print(e)
             formatted_date = video["Dt Posted"]
-        
+
         cursor.execute(query, (
-                videoID,
-                keyword,
-                results_vidID,
-                results_vidurl,
-                results_vidTitle,
-                results_vidDesc,
-                formatted_duration,
-                views_count,
-                formatted_date
-            ))
+            videoID,
+            keyword,
+            results_vidID,
+            results_vidurl,
+            results_vidTitle,
+            results_vidDesc,
+            formatted_duration,
+            views_count,
+            formatted_date
+        ))
+
     connection.commit()    
 
 def insert_data_to_video_stats(df):
-    values = df[['channel_id', 'video_id', 'date', 'title', 'view_count','like_count', 'comment_count', 'category']].values.tolist()
-    values = [[str(val) if isinstance(val, pd.Timestamp) else val for val in row] for row in values]
+    values = df[['channel_id', 'video_id', 'date', 'title', 'view_count', 'like_count', 'comment_count', 'category']].values.tolist()
+    values = [tuple([str(val) if isinstance(val, pd.Timestamp) else val for val in row]) for row in values]
     sql = '''
-        INSERT OR REPLACE INTO VideoStats (channel_id, video_id, date, vid_title, vid_view_cnt, vid_like_cnt, vid_comment_cnt, category)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO VideoStats (channel_id, vid_id, date, vid_title, vid_view_cnt, vid_like_cnt, vid_comment_cnt, category)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+        vid_title = VALUES(vid_title),
+        vid_view_cnt = VALUES(vid_view_cnt),
+        vid_like_cnt = VALUES(vid_like_cnt),
+        vid_comment_cnt = VALUES(vid_comment_cnt),
+        category = VALUES(category)
     '''
     cursor.executemany(sql, values)
     connection.commit()
@@ -258,23 +282,40 @@ def insert_data_to_monthly_stats(df):
 
         # Insert a row into MonthlyStats table
         cursor.execute('''
-            INSERT OR REPLACE INTO MonthlyStats (channel_id, date, channel_subs, overall_views)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO MonthlyStats (channel_id, date, channel_subs, overall_views)
+            VALUES (%s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+            channel_subs = VALUES(channel_subs),
+            overall_views = VALUES(overall_views)
         ''', (channel_id, date, channel_subs, overall_views))
-        
-    connection.commit()  
+
+    connection.commit()
+
+async def get_FhlComments(vid_id):
+    query = f"SELECT * FROM Comments_filtered WHERE vid_id = '{vid_id}'"
+    cursor.execute(query)
+    data = cursor.fetchall()
+    columns = ['Video ID', 'Comment ID', 'Comments']
+    df = pd.DataFrame(data, columns=columns)
+    return df
+
+async def get_MhlComments(vid_id):
+    query = f"SELECT * FROM Comments_Unfiltered WHERE vid_id = '{vid_id}'"
+    cursor.execute(query)
+    data = cursor.fetchall()
+    columns = ['Video ID', 'Comment ID', 'Comments']
+    df = pd.DataFrame(data, columns=columns)
+    return df
+
 
 async def get_channel_name(channel_id):
-    
-    cursor.execute('SELECT channel_title FROM Channels WHERE channel_id = ?', (channel_id,))
+    cursor.execute('SELECT channel_title FROM Channels WHERE channel_id = %s', (channel_id,))
     result = cursor.fetchone()
     return result[0] if result else None
 
-
-async def retrieve_comments_by_sentiment(table_name: str, videoID: str, sentiment: str):
-
-    query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = ? AND sentiment = ?"
-    cursor.execute(query,(videoID, sentiment))
+async def retrieve_comments_by_sentiment(table_name, videoID, sentiment):
+    query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = %s AND sentiment = %s"
+    cursor.execute(query, (videoID, sentiment))
 
     comments = []
     for row in cursor.fetchall():
@@ -285,13 +326,10 @@ async def retrieve_comments_by_sentiment(table_name: str, videoID: str, sentimen
         }
         comments.append(comment)
 
-    return  {videoID: comments}
+    return {videoID: comments}
 
-
-async def retrieve_all_comments(table_name: str, videoID: str):
-   
-    query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = ?"
-    print(query)
+async def retrieve_all_comments(table_name, videoID):
+    query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = %s"
     cursor.execute(query, (videoID,))
     comments = []
     for row in cursor.fetchall():
@@ -304,10 +342,8 @@ async def retrieve_all_comments(table_name: str, videoID: str):
 
     return {videoID: comments}
 
-
 async def get_videos_by_channelID(channelID):
-    
-    query = "SELECT vid_id, vid_title, vid_view_cnt, vid_like_cnt, vid_comment_cnt, vid_url, vid_desc, vid_duration, vid_published_at, vid_thumbnail FROM Videos WHERE channel_id = ?"
+    query = "SELECT vid_id, vid_title, vid_view_cnt, vid_like_cnt, vid_comment_cnt, vid_url, vid_desc, vid_duration, vid_published_at, vid_thumbnail FROM Videos WHERE channel_id = %s"
     cursor.execute(query, (channelID,))
     rows = cursor.fetchall()
 
@@ -327,13 +363,11 @@ async def get_videos_by_channelID(channelID):
         }
         videos[video_id] = video_data
 
-    return {"channelID":channelID, "videos": videos}
-
+    return {"channelID": channelID, "videos": videos}
 
 
 async def get_videoids_by_channelID(channelID):
-    
-    query = "SELECT vid_id FROM Videos WHERE channel_id = ?"
+    query = "SELECT vid_id FROM Videos WHERE channel_id = %s"
     cursor.execute(query, (channelID,))
     rows = cursor.fetchall()
 
@@ -341,16 +375,15 @@ async def get_videoids_by_channelID(channelID):
     for row in rows:
         video_id = row[0]
         videos.append(video_id)
-        
+
     return videos
 
 
-async def get_user_requests(user_id):
-    
+async def get_user_requests(scan_id):
     cursor.execute('''
         SELECT * FROM Channels
-        WHERE user_id = ?
-    ''', (user_id,))
+        WHERE scan_id = %s
+    ''', (scan_id,))
 
     rows = cursor.fetchall()
     columns = [column[0] for column in cursor.description]
@@ -361,249 +394,3 @@ async def get_user_requests(user_id):
 
     json_string = json.dumps(data)
     return json.loads(json_string)
-
-
-async def workProgress_util1(channel_id):
-    
-    cursor.execute('''
-        SELECT * FROM Videos WHERE channel_id = ?
-    ''', (channel_id,))
-    result = cursor.fetchall()
-
-    if len(result) == 0:
-        return json.dumps({"error": "No scraped videos found for the given channel_id"})
-
-    videos = []
-    for row in result:
-        video = {
-
-            "video_id": row[1],
-            "video_title": row[2],
-            "video_view_count": row[3],
-            "video_like_count": row[4],
-            "video_comment_count": row[5],
-            "video_url": row[6],
-            "video_description": row[7],
-            "video_duration": row[8],
-            "video_published_at": row[9],
-            "video_thumbnail": row[10]
-        }
-        videos.append(video)
-    scraped_videoData = {
-                "Videos Count": len(videos),
-                "Video Data":  { "channel_id": {row[0]: videos} }
-        }
-        
-    return json.loads(json.dumps(scraped_videoData, indent=4))
-
-
-async def workProgress_util2(channel_id,tables):
-    
-    query_high_level = f'''
-        SELECT DISTINCT OU.vid_id, COUNT(OU.comment_id) AS comment_count
-        FROM {tables[0]} OU
-        WHERE OU.vid_id IN (
-            SELECT V.vid_id
-            FROM Videos V
-            WHERE V.channel_id = ?
-        )
-        GROUP BY OU.vid_id
-    '''
-
-    query_all_comments = f'''
-        SELECT DISTINCT CU.vid_id, COUNT(CU.comment_id) AS comment_count
-        FROM {tables[1]} CU
-        WHERE CU.vid_id IN (
-            SELECT V.vid_id
-            FROM Videos V
-            WHERE V.channel_id = ?
-        )
-        GROUP BY CU.vid_id
-    '''
-
-    cursor.execute(query_high_level, (channel_id,))
-    rows_high_level = cursor.fetchall()
-
-    cursor.execute(query_all_comments, (channel_id,))
-    rows_all_comments = cursor.fetchall()
-
-    high_level_comments = []
-    all_comments = []
-
-    for row in rows_high_level:
-        video_id = row[0]
-        comment_count = row[1]
-
-        query_video_details = '''
-            SELECT vid_title
-            FROM Videos
-            WHERE vid_id = ?
-        '''
-        cursor.execute(query_video_details, (video_id,))
-        video_row = cursor.fetchone()
-
-        if video_row:
-            video_title = video_row[0]
-
-            high_level_comment = {
-                "video_id": video_id,
-                "video_title": video_title,
-                "video_comment_count": comment_count
-            }
-
-            high_level_comments.append(high_level_comment)
-
-    for row in rows_all_comments:
-        video_id = row[0]
-        comment_count = row[1]
-
-        query_video_details = '''
-            SELECT vid_title
-            FROM Videos
-            WHERE vid_id = ?
-        '''
-        cursor.execute(query_video_details, (video_id,))
-        video_row = cursor.fetchone()
-
-        if video_row:
-            video_title = video_row[0]
-
-            all_comment = {
-                "video_id": video_id,
-                "video_title": video_title,
-                "video_comment_count": comment_count
-            }
-
-            all_comments.append(all_comment)
-
-    video_data = {
-        "High Level Comments": {
-            "Videos Count": len(high_level_comments),
-            "Video Info" : high_level_comments},
-        "All Comments": {
-            "Videos Count": len(all_comments),
-            "Video Info" : all_comments},
-    }
-    return json.loads(json.dumps(video_data, indent=4))
-
-        
-async def get_completed_works(channel_id):
-    
-    tables1 = ["OnlyComments_SentimentAnalysis","CommentsWithReply_SentimentAnalysis"]
-    tables2 = ["OnlyComments_Unfiltered","CommentsWithReply_Unfiltered"]
-    
-    work_progressData = {
-        
-        "Scraped Videos": workProgress_util1(channel_id),
-        "Scraped Comments": workProgress_util2(channel_id,tables2),
-        "Sentiment Analysis Completed": workProgress_util2(channel_id,tables1)
-           
-    }
-    
-    return json.loads(json.dumps(work_progressData, indent=4))
-
-
-
-async def workPending_util1(channel_id,tables):
-    
-    query_high_level = f'''
-        SELECT DISTINCT OU.vid_id
-        FROM {tables[0]} OU
-        WHERE OU.vid_id IN (
-            SELECT V.vid_id
-            FROM Videos V
-            WHERE V.channel_id = ?
-        )
-    '''
-
-    query_all_comments = f'''
-        SELECT DISTINCT CU.vid_id
-        FROM {tables[1]} CU
-        WHERE CU.vid_id IN (
-            SELECT V.vid_id
-            FROM Videos V
-            WHERE V.channel_id = ?
-        )
-    '''
-
-    cursor.execute(query_high_level, (channel_id,))
-    rows_high_level = cursor.fetchall()
-
-    cursor.execute(query_all_comments, (channel_id,))
-    rows_all_comments = cursor.fetchall()
-
-    existing_high_level_videos = set([row[0] for row in rows_high_level])
-    existing_all_comments_videos = set([row[0] for row in rows_all_comments])
-
-    query_high_level_pending_works = '''
-        SELECT vid_id, vid_title
-        FROM Videos
-        WHERE channel_id = ? AND vid_id NOT IN (SELECT DISTINCT vid_id FROM OnlyComments_Unfiltered)
-    '''
-
-    cursor.execute(query_high_level_pending_works, (channel_id,))
-    rows_high_level_pending_works = cursor.fetchall()
-
-    high_level_pending_works = []
-
-    for row in rows_high_level_pending_works:
-        video_id = row[0]
-        video_title = row[1]
-
-        pending_work = {
-            "video_id": video_id,
-            "video_title": video_title
-        }
-
-        high_level_pending_works.append(pending_work)
-
-    query_all_comments_pending_works = '''
-        SELECT vid_id, vid_title
-        FROM Videos
-        WHERE channel_id = ? AND vid_id NOT IN (SELECT DISTINCT vid_id FROM CommentsWithReply_Unfiltered)
-    '''
-
-    cursor.execute(query_all_comments_pending_works, (channel_id,))
-    rows_all_comments_pending_works = cursor.fetchall()
-
-    all_comments_pending_works = []
-
-    for row in rows_all_comments_pending_works:
-        video_id = row[0]
-        video_title = row[1]
-
-        pending_work = {
-            "video_id": video_id,
-            "video_title": video_title
-        }
-
-        all_comments_pending_works.append(pending_work)
-
-    pending_data = {
-        "Pending Works": {
-            "Pending High Level Comments": {
-                "Videos Count yet to be scraped": len(high_level_pending_works),
-                "Video Info yet to be scraped": high_level_pending_works
-            },
-            "Pending All Comments": {
-                "Videos Count yet to be scraped": len(all_comments_pending_works),
-                "Video Info yet to be scraped": all_comments_pending_works
-            }
-        }
-    }
-
-    return json.loads(json.dumps(pending_data, indent=4))
-
-
-async def get_pending_works(channel_id):
-    
-    tables1 = ["OnlyComments_SentimentAnalysis","CommentsWithReply_SentimentAnalysis"]
-    tables2 = ["OnlyComments_Unfiltered","CommentsWithReply_Unfiltered"]
-    
-    work_pendingData = {
-        
-        "Pending Comments Scraping": workPending_util1(channel_id, tables2),
-        "Pending Sentiment Analysis": workPending_util1(channel_id, tables1)    
-    }
-
-    return json.loads(json.dumps(work_pendingData, indent=4))
