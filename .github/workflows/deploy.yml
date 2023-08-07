@@ -13,8 +13,8 @@ jobs:
       - name: SSH into Raspberry Pi and deploy with tailscale
         uses: tailscale/github-action@v2
         with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          oauth-client-id: kBxCDi1CNTRL
+          oauth-secret: tskey-client-kBxCDi1CNTRL-BmZ41ivp1cFWk21vwmy3cFpJj7ZdPU9TD
           script: |
             cd /home/sasi/Sentilytics-rspi
             git pull origin rspi
