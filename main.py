@@ -106,12 +106,12 @@ async def scrape_cvStats(background_tasks: BackgroundTasks,
     return JSONResponse(content={"message": "CV Stats initiated"})
 
 @router.get("/make_replica/")
-async def scrape_cvStats(scanID: str = Query(..., description="Scan ID")):
+async def scrape_cvStats(scanID: str = Query(..., description="Scan ID"),channelID: str = Query(..., description="Channel ID")):
     """
     Endpoint to make data replication for a given scan/Scan id.
     """
-    await insert_scan_info(channel_id=scanID, phase='make_replica',is_start=True)
-    await makeReplication(scanID)
+    await insert_scan_info(channel_id=channelID, phase='make_replica',is_start=True)
+    await makeReplication(scanID,channelID)
     return JSONResponse(content={"message": "Replication Done"})
 
 # ====  GET METHODS  ====
