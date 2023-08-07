@@ -16,10 +16,17 @@ jobs:
           oauth-client-id: kyJWF63CNTRL
           oauth-secret: tskey-client-kyJWF63CNTRL-zTkcZ8LJJXj17Dk6uXVaWjHkgDvyetTXF
           tags: tag:ci
+          
+      - name: SSH into Raspberry Pi and deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: 100.100.151.14
+          username: sasi
+          password: 7122
           script: |
-            ssh -o "StrictHostKeyChecking=no" sasi@100.100.151.14 "cd /home/sasi/Sentilytics-rspi && git pull origin rspi"
-
-            
+            cd /home/sasi/Sentilytics-rspi
+            git pull origin rspi
+          
 
 
 
