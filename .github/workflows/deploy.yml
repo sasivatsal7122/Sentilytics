@@ -15,6 +15,7 @@ jobs:
         with:
           oauth-client-id: kyJWF63CNTRL
           oauth-secret: tskey-client-kyJWF63CNTRL-zTkcZ8LJJXj17Dk6uXVaWjHkgDvyetTXF
+          tags: tag:ci
           script: |
             cd /home/sasi/Sentilytics-rspi
             git pull origin rspi
