@@ -145,5 +145,5 @@ async def start_cvStats(scanID, channelID,channelName):
                 error_message = f"Error Scraping Video Stats for {channelName} - {str(e)}"
                 await insert_scan_info(channel_id=channelID,phase="cvstats_video",notes=error_message,success=False)
             
-    await make_post_request(f"http://0.0.0.0:8000/make_replica/?scanID={scanID}")
+    await make_post_request(f"http://0.0.0.0:8000/make_replica/?scanID={scanID}&channelID={channelID}")
     
