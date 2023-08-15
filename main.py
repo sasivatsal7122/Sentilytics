@@ -38,7 +38,7 @@ async def root():
 # helper function for scrape channel endpoint
 async def scrapeCHannelUtil(scanID, channelUsername, background_tasks):
     DEVELOPER_KEY, _, _ = get_DevKey()
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=300) as client:
         response = await client.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channelUsername}&type=channel&key={DEVELOPER_KEY}")
         response_json = response.json()
     channelID = response_json['items'][0]['id']['channelId']
