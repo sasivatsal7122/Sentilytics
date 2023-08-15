@@ -16,6 +16,8 @@ from getMethods import get_channel_info,get_monthly_stats,get_video_stats,\
 
 from make_replication import makeReplication
 
+
+#gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 main:app
 app = FastAPI()
 
 app.add_middleware(
