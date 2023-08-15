@@ -6,7 +6,7 @@ import configparser
 import random
 
 conn_params = {
-    "host": "127.0.0.1",
+    "host": "0.0.0.0",
     "port": 3306,                # Change to your MySQL port if necessary
     "user": "admin",
     "password": "admin",
