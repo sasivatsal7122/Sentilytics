@@ -2,7 +2,7 @@ from fastapi import FastAPI, APIRouter, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from process import scrape_channel_info,scrape_HighLvlcomments
-import requests
+import httpx
 
 from sentimentAnalysis import performSentilytics
 
@@ -36,13 +36,16 @@ async def root():
     return {"message": "Hello World"}
 
 # helper function for scrape channel endpoint
-async def scrapeCHannelUtil(scanID, channelUsername,background_tasks):
-    DEVELOPER_KEY,_,_ = get_DevKey()
-    response = requests.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channelUsername}&type=channel&key={DEVELOPER_KEY}").json()
-    channelID =  response['items'][0]['id']['channelId']
+async def scrapeCHannelUtil(scanID, channelUsername, background_tasks):
+    DEVELOPER_KEY, _, _ = get_DevKey()
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channelUsername}&type=channel&key={DEVELOPER_KEY}")
+        response_json = response.json()
+    channelID = response_json['items'][0]['id']['channelId']
     
-    await insert_scan_info(channel_id=channelID, phase='scrape_channel',is_start=True)
-    background_tasks.add_task(scrape_channel_info,scanID, channelUsername,background_tasks)   
+    await insert_scan_info(channel_id=channelID, phase='scrape_channel', is_start=True)
+    background_tasks.add_task(scrape_channel_info, scanID, channelUsername, background_tasks)
+  
 
 # Define the "scrape_channel" route
 @router.get("/scrape_channel/")
