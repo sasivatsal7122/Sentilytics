@@ -31,16 +31,16 @@ def get_DevKey():
     return random_key, api_service_name, api_version
 
 
-async def insert_scan_info(channel_id=None, phase=None, is_start=False, success=False, notes=None):
+async def insert_scan_info(scan_id=None, channel_id=None, phase=None, is_start=False, success=False, notes=None):
     
     current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     if is_start:
         cursor.execute('''
-            INSERT INTO ScanInfo (channel_id, phase, start_time, success, notes)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO ScanInfo (scan_id, channel_id, phase, start_time, success, notes)
+            VALUES (%s, %s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE start_time=%s, success=%s, notes=%s
-        ''', (channel_id, phase, current_time, success, notes, current_time, success, notes))
+        ''', (scan_id, channel_id, phase, current_time, success, notes, current_time, success, notes))
     else:
         cursor.execute('''
             UPDATE ScanInfo

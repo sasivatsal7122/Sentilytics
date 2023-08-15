@@ -10,19 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: SSH into Raspberry Pi and deploy with tailscale
+      - name: Configuring tailscale on the runner
         uses: tailscale/github-action@v2
         with:
-          oauth-client-id: kyJWF63CNTRL
-          oauth-secret: tskey-client-kyJWF63CNTRL-zTkcZ8LJJXj17Dk6uXVaWjHkgDvyetTXF
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
           
       - name: SSH into Raspberry Pi and deploy
         uses: appleboy/ssh-action@master
         with:
-          host: 100.100.151.14
-          username: sasi
-          password: 7122
+          host: ${{ secrets.PI_HOST }}
+          username: ${{ secrets.PI_USERNAME }}
+          password: ${{ secrets.PI_PASSWORD }}
           script: |
             cd /home/sasi/Sentilytics-rspi
             git pull origin rspi

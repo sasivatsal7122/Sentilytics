@@ -81,7 +81,7 @@ async def scrape_videos_info(scanID: str,channelID: str,channelUsername: str):
     await update_channel_partialData(channelID,PARTIAL_LIKES_CNT,PARTIAL_COMMENTS_CNT,PARTIAL_VIEWS_CNT)
     
     completion_message = f"For Channel: {channelUsername}, Scraping of Channel Info and Videos Info completed"
-    await insert_scan_info(channel_id= channelID, phase="scrape_channel", notes=completion_message,success=True)
+    await insert_scan_info(scan_id = scanID,channel_id= channelID, phase="scrape_channel", notes=completion_message,success=True)
     await make_post_request(f"http://0.0.0.0:8000/scrape_hlcomments/?scanID={scanID}&channelID={channelID}")
     
 
@@ -212,7 +212,7 @@ async def scrape_HighLvlcomments(scanID, channelID):
             return {'error':f'An HTTP error occurred: {e}'}
     
     completion_message = f"Scraping of high-level comments completed for channel: {channelName}."
-    await insert_scan_info(channel_id= channelID,phase="scrape_hlcomments", notes=completion_message,success=True)
+    await insert_scan_info(scan_id = scanID,channel_id= channelID,phase="scrape_hlcomments", notes=completion_message,success=True)
     await make_post_request(f"http://0.0.0.0:8000/perform_sentilytics/?scanID={scanID}&channelID={channelID}")
     
 # def get_Lowlvlcomments(videoId):

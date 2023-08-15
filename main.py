@@ -43,7 +43,7 @@ async def scrapeCHannelUtil(scanID, channelUsername, background_tasks):
         response_json = response.json()
     channelID = response_json['items'][0]['id']['channelId']
     
-    await insert_scan_info(channel_id=channelID, phase='scrape_channel', is_start=True)
+    await insert_scan_info(scan_id = scanID,channel_id=channelID, phase='scrape_channel', is_start=True)
     background_tasks.add_task(scrape_channel_info, scanID, channelUsername, background_tasks)
   
 
@@ -67,7 +67,7 @@ async def get_hlcomments(background_tasks: BackgroundTasks,
     Endpoint to get high-level comments.
     """
 
-    await insert_scan_info(channel_id=channelID, phase='scrape_hlcomments',is_start=True)
+    await insert_scan_info(scan_id = scanID,channel_id=channelID, phase='scrape_hlcomments',is_start=True)
     background_tasks.add_task(scrape_HighLvlcomments,scanID,channelID)
     return JSONResponse(content={"message": "Comments Scraping initiated"})
 
@@ -80,7 +80,7 @@ async def perform_sentilytics(background_tasks: BackgroundTasks,
     Endpoint to perform sentiment analysis on comments.
     """
     
-    await insert_scan_info(channel_id=channelID, phase='perform_sentilytics',is_start=True)
+    await insert_scan_info(scan_id = scanID, channel_id=channelID, phase='perform_sentilytics',is_start=True)
     background_tasks.add_task(performSentilytics, scanID,channelID)
     return JSONResponse(content={"message": "Sentiment Analysis initiated"})
 
@@ -90,11 +90,11 @@ async def perform_youtube_ranker(background_tasks: BackgroundTasks, videoID: str
 
 # Define the "perform_youtube_ranker" route
 @router.get("/perform_youtube_ranker/")
-async def perform_youtube_ranker_route(background_tasks: BackgroundTasks, videoID: str = Query(..., description="Video ID"), keyword: str = Query(..., description="Keyword")):
+async def perform_youtube_ranker_route(background_tasks: BackgroundTasks,scanID: str = Query(..., description="Scan ID"), videoID: str = Query(..., description="Video ID"), keyword: str = Query(..., description="Keyword")):
     """
     Endpoint to perform YouTube ranking.
     """
-    await insert_scan_info(channel_id=videoID, phase='perform_youtube_ranker',is_start=True)
+    await insert_scan_info(scan_id = scanID,channel_id=videoID, phase='perform_youtube_ranker',is_start=True)
     await perform_youtube_ranker(background_tasks, videoID, keyword)
     return JSONResponse(content={"message": "YouTube ranking initiated"})
 
@@ -115,7 +115,7 @@ async def scrape_cvStats(scanID: str = Query(..., description="Scan ID"),channel
     """
     Endpoint to make data replication for a given scan/Scan id.
     """
-    await insert_scan_info(channel_id=channelID, phase='make_replica',is_start=True)
+    await insert_scan_info(scan_id = scanID,channel_id=channelID, phase='make_replica',is_start=True)
     await makeReplication(scanID,channelID)
     return JSONResponse(content={"message": "Replication Done"})
 

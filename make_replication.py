@@ -7,8 +7,6 @@ from postreq import send_telegram_message
 async def makeReplication(scanID,channelID):
     
     data_dict = select_data_by_scan_id(scanID)
-    print(data_dict)
-
     conn_params = {
         "host": "0.0.0.0",
         "port": 3307,                # Change to your MySQL port if necessary
@@ -180,6 +178,6 @@ async def makeReplication(scanID,channelID):
     conn.commit()
     
     completion_message = "Replication Done."
-    await insert_scan_info(channel_id=channelID, phase='make_replica',notes=completion_message,success=True)
+    await insert_scan_info(scan_id = scanID,channel_id=channelID, phase='make_replica',notes=completion_message,success=True)
     #await send_telegram_message(channelID, channelName)
    
