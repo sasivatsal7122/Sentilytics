@@ -123,6 +123,7 @@ def createReplicaTables():
     # Create the ScanInfo table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ScanInfo (
+        scan_id VARCHAR(255),
         channel_id VARCHAR(255),
         phase VARCHAR(255),
         start_time VARCHAR(255),
