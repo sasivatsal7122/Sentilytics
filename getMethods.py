@@ -1,10 +1,9 @@
 import pymysql
 import json 
 
-
 conn_params = {
-    "host": "127.0.0.0",
-    "port": 3306,                # Change to your MySQL port if necessary
+    "host": "0.0.0.0",
+    "port": 3306,              
     "user": "admin",
     "password": "admin",
     "db": "sentilytics",
