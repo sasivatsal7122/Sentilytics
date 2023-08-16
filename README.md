@@ -29,7 +29,7 @@ The base URL for all API endpoints is `http://127.0.0.1:8000`.
     - `channelUsername` (required): Channel Username
 - **Example**:
     ```http
-    GET /scrape_channel/?userID=12345&channelUsername=mychannel HTTP/1.1
+    GET /scrape_channel/?scanID=12345&channelUsername=mychannel HTTP/1.1
     Host: http://127.0.0.1:8000
     ```
 
@@ -42,7 +42,7 @@ The base URL for all API endpoints is `http://127.0.0.1:8000`.
     - `channelID` (required): Channel ID
 - **Example**:
     ```http
-    GET /scrape_hlcomments/?channelID=12345 HTTP/1.1
+    GET /scrape_hlcomments/?scanID=12345&channelID=12345 HTTP/1.1
     Host: http://127.0.0.1:8000
     ```
 
@@ -55,7 +55,7 @@ The base URL for all API endpoints is `http://127.0.0.1:8000`.
     - `channelID` (required): Channel ID
 - **Example**:
     ```http
-    GET /perform_sentilytics/?channelID=12345 HTTP/1.1
+    GET /perform_sentilytics/?scanID=12345&channelID=12345 HTTP/1.1
     Host: http://127.0.0.1:8000
     ```
 
@@ -82,7 +82,7 @@ The base URL for all API endpoints is `http://127.0.0.1:8000`.
     - `channelID` (required): Channel ID
 - **Example**:
     ```http
-    GET /cvstats/?channelID=12345 HTTP/1.1
+    GET /cvstats/?scanID=12345&channelID=12345 HTTP/1.1
     Host: http://127.0.0.1:8000
     ```
     

@@ -14,10 +14,13 @@ import time
 
 from database import insert_video_rankings
 
+driver_exceutable_path = "/home/sasi/Sentilytics-rspi/chromedriver"
 
 def initialize_driver(options: Options):
 
-    driver = webdriver.Chrome(options=options, service=Service(ChromeDriverManager().install()))
+    #driver = webdriver.Chrome(options=options, service=Service(ChromeDriverManager().install()))
+    # uncomment in Pi4 production server, chmod +x the driver and set path in root
+    driver = webdriver.Chrome(options=options, service=Service(driver_exceutable_path))
     return driver
 
 def get_webdriverOptions():

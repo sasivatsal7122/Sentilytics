@@ -1,3 +1,9 @@
 sentilytics.tar
 .ipynb
-/testing
+testing/
+Analytics/
+__pycache__/
+Scraped Data Archives/
+.ipynb_checkpoints/
+sentilytics.db
+sentilyticsReplica.db

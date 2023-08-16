@@ -14,10 +14,6 @@ def download_nltk_resources():
         nltk.download(resource)
 
 def download_model():
-    model = "cardiffnlp/twitter-roberta-base-sentiment"
-    tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False)
-    model = AutoModelForSequenceClassification.from_pretrained(model, from_tf=False)
-    
     model = "cardiffnlp/twitter-roberta-base-sentiment-latest"
     tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False)
     model = AutoModelForSequenceClassification.from_pretrained(model, from_tf=False)
