@@ -21,7 +21,7 @@ from emojiAnalysis import calcEmojiFreq
 
 async def scrape_videos_info(scanID: str,channelID: str,channelUsername: str):
     """
-    Endpoint to get the latest 20 records.
+    Endpoint to get the latest 6 records.
     """    
     PARTIAL_LIKES_CNT = 0
     PARTIAL_COMMENTS_CNT = 0
@@ -37,7 +37,7 @@ async def scrape_videos_info(scanID: str,channelID: str,channelUsername: str):
         'getduration': True,
         'getdescription': True,
         'getuploaddate': True,
-        'playlistend': 2
+        'playlistend': 6
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
