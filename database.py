@@ -30,7 +30,14 @@ def get_DevKey():
 
     return random_key, api_service_name, api_version
 
-
+def update_scaninfo_channelid(channel_id,scan_id,phase="scrape_channel"):
+    cursor.execute('''
+            UPDATE ScanInfo
+            SET channel_id=%s
+            WHERE scan_id=%s AND phase=%s
+        ''', (channel_id, scan_id, phase))
+    connection.commit()
+    
 async def insert_scan_info(scan_id=None, channel_id=None, phase=None, is_start=False, success=False, notes=None):
     
     current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
