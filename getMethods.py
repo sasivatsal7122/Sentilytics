@@ -97,14 +97,7 @@ def get_emoji_analysis(channel_id):
 
 def select_data_by_scan_id(scan_id):
     
-    data_dict = {
-        'channel': '',
-        'video_stats':'',
-        'monthly_stats':'',
-        'scan_info':'',
-        'videos':'',
-        
-    }
+    data_dict = {}
     
     def get_channel_id_by_scan_id(cursor, scan_id):
         cursor.execute("SELECT channel_id FROM Channels WHERE scan_id=%s", (scan_id,))
@@ -119,8 +112,9 @@ def select_data_by_scan_id(scan_id):
     channel_id = get_channel_id_by_scan_id(cursor, scan_id)
 
     if not channel_id:
-        return None
+        return "Given Scan ID not found"
 
+    # =========== CHANNELS TABLE DATA ===========
     cursor.execute("SELECT * FROM Channels WHERE channel_id=%s", (channel_id,))
     channel_columns = [column[0] for column in cursor.description]
 
@@ -130,6 +124,7 @@ def select_data_by_scan_id(scan_id):
 
     video_ids = get_video_ids_by_channel_id(cursor, channel_id)
 
+    # =========== VIDEOS TABLE DATA ===========
     cursor.execute("SELECT * FROM Videos WHERE vid_id IN ({})".format(','.join(['%s'] * len(video_ids))), video_ids)
     video_columns = [column[0] for column in cursor.description]
 
@@ -137,30 +132,42 @@ def select_data_by_scan_id(scan_id):
     video_data = cursor.fetchall()
     data_dict['Videos'] = [dict(zip(video_columns, row)) for row in video_data]
 
-    for table_name in ['Emoji_Frequency', 'Video_Rankings', 'VideoStats']:
+    # =========== OTHER TABLE DATA ===========
+    for table_name in ['Emoji_Frequency', 'Video_Rankings']:
         cursor.execute("SELECT * FROM {} WHERE vid_id IN ({})".format(table_name, ','.join(['%s'] * len(video_ids))), video_ids)
         table_columns = [column[0] for column in cursor.description]
         table_data = cursor.fetchall()
         data_dict[table_name] = [dict(zip(table_columns, row)) for row in table_data]
 
-    sentiment_data = []
+    # =========== sENTIMENT ANALYSIS  TABLE DATA ===========
+    sentiment_data = []; 
     for vid_id in video_ids:
         cursor.execute("SELECT * FROM Comments_SentimentAnalysis WHERE vid_id=%s", (vid_id,))
         sentiment_data.extend(cursor.fetchall())
     sentiment_columns = [column[0] for column in cursor.description]
     data_dict['Comments_SentimentAnalysis'] = [dict(zip(sentiment_columns, row)) for row in sentiment_data]
 
+    # =========== mONTHLY STATS TABLE DATA ===========
     cursor.execute("SELECT * FROM MonthlyStats WHERE channel_id=%s", (channel_id,))
     monthly_stats_columns = [column[0] for column in cursor.description]
 
     cursor.execute("SELECT * FROM MonthlyStats WHERE channel_id=%s", (channel_id,))
     monthly_stats_data = cursor.fetchall()
     data_dict['MonthlyStats'] = [dict(zip(monthly_stats_columns, row)) for row in monthly_stats_data]
+    
+    # =========== VIDEO STATS TABLE DATA ===========
+    cursor.execute("SELECT * FROM VideoStats WHERE channel_id=%s", (channel_id,))
+    video_stats_columns = [column[0] for column in cursor.description]
 
-    cursor.execute("SELECT * FROM ScanInfo WHERE channel_id=%s", (channel_id,))
+    cursor.execute("SELECT * FROM VideoStats WHERE channel_id=%s", (channel_id,))
+    video_stats_data = cursor.fetchall()
+    data_dict['VideoStats'] = [dict(zip(video_stats_columns, row)) for row in video_stats_data]
+
+    # =========== SCAN INFO TABLE DATA ===========
+    cursor.execute("SELECT * FROM ScanInfo WHERE scan_id=%s", (scan_id,))
     scan_info_columns = [column[0] for column in cursor.description]
 
-    cursor.execute("SELECT * FROM ScanInfo WHERE channel_id=%s", (channel_id,))
+    cursor.execute("SELECT * FROM ScanInfo WHERE scan_id=%s", (scan_id,))
     scan_info_data = cursor.fetchall()
     data_dict['ScanInfo'] = [dict(zip(scan_info_columns, row)) for row in scan_info_data]
    
