@@ -14,7 +14,7 @@ from filterDF import FilterDF
 from database import insert_channel_info,insert_videos_info,\
     insert_highlvl_cmntInfo,insert_highlvl_filtered_cmntInfo,\
     insert_EmojiFreq,update_channel_partialData, get_DevKey, insert_scan_info,\
-    get_channel_name, get_videoids_by_channelID
+    get_channel_name, get_videoids_by_channelID, update_scaninfo_channelid
 
 from emojiAnalysis import calcEmojiFreq
 
@@ -37,7 +37,7 @@ async def scrape_videos_info(scanID: str,channelID: str,channelUsername: str):
         'getduration': True,
         'getdescription': True,
         'getuploaddate': True,
-        'playlistend': 20
+        'playlistend': 2
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -90,6 +90,7 @@ async def scrape_channel_info(scanID,channel_username,background_tasks: Backgrou
     DEVELOPER_KEY,_,_ = get_DevKey()
     response = requests.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channel_username}&type=channel&key={DEVELOPER_KEY}").json()
     channel_id =  response['items'][0]['id']['channelId']
+    update_scaninfo_channelid(channel_id,scanID)
     channel_info = {
         'channel_id': channel_id,
         'channel_title': '',
