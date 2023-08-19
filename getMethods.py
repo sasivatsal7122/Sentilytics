@@ -139,7 +139,7 @@ def select_data_by_scan_id(scan_id):
         table_data = cursor.fetchall()
         data_dict[table_name] = [dict(zip(table_columns, row)) for row in table_data]
 
-    # =========== sENTIMENT ANALYSIS  TABLE DATA ===========
+    # =========== SENTIMENT ANALYSIS  TABLE DATA ===========
     sentiment_data = []; 
     for vid_id in video_ids:
         cursor.execute("SELECT * FROM Comments_SentimentAnalysis WHERE vid_id=%s", (vid_id,))
@@ -147,7 +147,7 @@ def select_data_by_scan_id(scan_id):
     sentiment_columns = [column[0] for column in cursor.description]
     data_dict['Comments_SentimentAnalysis'] = [dict(zip(sentiment_columns, row)) for row in sentiment_data]
 
-    # =========== mONTHLY STATS TABLE DATA ===========
+    # =========== MONTHLY STATS TABLE DATA ===========
     cursor.execute("SELECT * FROM MonthlyStats WHERE channel_id=%s", (channel_id,))
     monthly_stats_columns = [column[0] for column in cursor.description]
 
