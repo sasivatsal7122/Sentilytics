@@ -158,12 +158,13 @@ async def makeReplication(scanID,channelID):
 
     # Insert or update data in ScanInfo table
     scan_info_data = data_dict.get('ScanInfo')
+    scan_info_data = [item for item in scan_info_data if item.get('phase') != 'make_replica']
     if scan_info_data:
         for info_data in scan_info_data:
             sql = '''
                 INSERT INTO ScanInfo 
-                (channel_id, phase, start_time, end_time, success, notes)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                (scan_id,channel_id, phase, start_time, end_time, success, notes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 ON DUPLICATE KEY UPDATE
                 start_time = VALUES(start_time),
                 end_time = VALUES(end_time),
@@ -171,7 +172,7 @@ async def makeReplication(scanID,channelID):
                 notes = VALUES(notes)
             '''
             cursor.execute(sql, (
-                info_data['channel_id'], info_data['phase'], info_data['start_time'], info_data['end_time'],
+                info_data['scan_id'],info_data['channel_id'], info_data['phase'], info_data['start_time'], info_data['end_time'],
                 info_data['success'], info_data['notes']
             ))
 
