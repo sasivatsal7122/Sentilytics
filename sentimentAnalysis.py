@@ -171,13 +171,17 @@ async def performSentiandVoting(master_comments_df,comments_df,videoID):
     vd_df = comments_df.copy()
     rb_df = comments_df.copy()
     
-    results = await asyncio.gather(
-        textblob(tb_df),
-        afinn(af_df),
-        vader(vd_df),        
-        robert(rb_df)
-    )
-    textBlob_df, afinn_df, vader_df, robert_df = results
+    # results = await asyncio.gather(
+    #     textblob(tb_df),
+    #     afinn(af_df),
+    #     vader(vd_df),        
+    #     robert(rb_df)
+    # )
+    # textBlob_df, afinn_df, vader_df, robert_df = results
+    textBlob_df = textblob(tb_df)
+    afinn_df = afinn(af_df)
+    vader_df = vader(vd_df)
+    robert_df = robert(rb_df)
     
     vote_df = pd.DataFrame()
     vote_data = []
