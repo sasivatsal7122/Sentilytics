@@ -17,7 +17,7 @@ from database import insert_scan_info
 import warnings
 
 
-async def vader(vader_df):
+def vader(vader_df):
     vader_df['Comments'] = vader_df['Comments'].astype(str)
     vader_df['Comments'] = vader_df['Comments'].apply(lambda x: ' '.join([w for w in x.split() if len(w)>3]))
     vader_df['Comments'] = vader_df['Comments'].apply(lambda x:x.lower())
@@ -44,7 +44,7 @@ async def vader(vader_df):
     
     return vader_df
 
-async def textblob(textBlob_df):
+def textblob(textBlob_df):
     textBlob_df['Comments'] = textBlob_df['Comments'].astype(str)
     textBlob_df['Sentiment Scores'] = ''
     textBlob_df['Sentiment'] = ''
@@ -81,7 +81,7 @@ async def textblob(textBlob_df):
     
     return textBlob_df
 
-async def afinn(afinn_df):
+def afinn(afinn_df):
     afinn = Afinn()
     afinn_df['Comments'] = afinn_df['Comments'].astype(str)
 
@@ -111,8 +111,8 @@ async def afinn(afinn_df):
     afinn_percentages = afinn_df['Sentiment'].value_counts(normalize=True) * 100
     
     return afinn_df
-    
-async def robert(robert_df):
+
+def robert(robert_df):
     def preprocess(text):
         new_text = []
         for t in text.split(" "):
