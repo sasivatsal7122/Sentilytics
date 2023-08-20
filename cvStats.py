@@ -49,32 +49,35 @@ def get_driver():
     return driver
 
 def begin_monthlyStats(channelID,channelName):
-    print("Starting monthly stats for channel: %s"%(channelName))
-    driver = get_driver()
-    driver.get(URLS["monthly"]%(channelID))
-    target_styles = ['width: 860px; height: 32px; line-height: 32px; background: #f8f8f8;; padding: 0px 20px; color:#444; font-size: 9pt; border-bottom: 1px solid #eee;',
-                 "width: 860px; height: 32px; line-height: 32px; background: #fcfcfc; padding: 0px 20px; color:#444; font-size: 9pt; border-bottom: 1px solid #eee;"]
+    try:
+        print("Starting monthly stats for channel: %s"%(channelName))
+        driver = get_driver()
+        driver.get(URLS["monthly"]%(channelID))
+        target_styles = ['width: 860px; height: 32px; line-height: 32px; background: #f8f8f8;; padding: 0px 20px; color:#444; font-size: 9pt; border-bottom: 1px solid #eee;',
+                    "width: 860px; height: 32px; line-height: 32px; background: #fcfcfc; padding: 0px 20px; color:#444; font-size: 9pt; border-bottom: 1px solid #eee;"]
 
-    wait = WebDriverWait(driver, 60)
-    divs = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, f'div[style*="{target_styles[0]}"], div[style*="{target_styles[1]}"]')))
-    print("Found %s divs"%(len(divs)))
-    data = [div.text.split() for div in divs]
-    monthlyStats = []
+        wait = WebDriverWait(driver, 60)
+        divs = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, f'div[style*="{target_styles[0]}"], div[style*="{target_styles[1]}"]')))
+        print("Found %s divs"%(len(divs)))
+        data = [div.text.split() for div in divs]
+        monthlyStats = []
 
-    for _ in data:
-        monthlyStats.append(
-        {   
-            "channel_id": channelID,
-            "date": _[0] +", "+ _[1],
-            "channel_subs": _[2] +", "+ _[3],
-            "overall_views": _[4] +", "+ _[5]
-        })
-    print("Finished monthly stats for channel: %s"%(channelName))
-    driver.quit()
-    
-    mdf = pd.DataFrame(monthlyStats)
-    insert_data_to_monthly_stats(mdf)
-    print("Inserted monthly stats for channel: %s"%(channelName))
+        for _ in data:
+            monthlyStats.append(
+            {   
+                "channel_id": channelID,
+                "date": _[0] +", "+ _[1],
+                "channel_subs": _[2] +", "+ _[3],
+                "overall_views": _[4] +", "+ _[5]
+            })
+        print("Finished monthly stats for channel: %s"%(channelName))
+        driver.quit()
+        
+        mdf = pd.DataFrame(monthlyStats)
+        insert_data_to_monthly_stats(mdf)
+        print("Inserted monthly stats for channel: %s"%(channelName))
+    finally:
+        driver.quit()
 
 def begin_videoStats(channelID,channelName):
     print("Starting video stats for channel: %s"%(channelName))
