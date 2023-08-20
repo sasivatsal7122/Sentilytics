@@ -13,8 +13,8 @@ conn_params = {
     "db": "sentilytics",
 }
 
-connection = pymysql.connect(**conn_params)
-cursor = connection.cursor()
+# connection = pymysql.connect(**conn_params)
+# cursor = connection.cursor()
 
 def get_DevKey():
     config = configparser.ConfigParser()
@@ -30,79 +30,84 @@ def get_DevKey():
 
     return random_key, api_service_name, api_version
 
-def update_scaninfo_channelid(channel_id,scan_id,phase="scrape_channel"):
-    cursor.execute('''
-            UPDATE ScanInfo
-            SET channel_id=%s
-            WHERE scan_id=%s AND phase=%s
-        ''', (channel_id, scan_id, phase))
-    connection.commit()
+def update_scaninfo_channelid(channel_id, scan_id, phase="scrape_channel"):
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                UPDATE ScanInfo
+                SET channel_id=%s
+                WHERE scan_id=%s AND phase=%s
+            ''', (channel_id, scan_id, phase))
+        connection.commit()
+
     
 async def insert_scan_info(scan_id=None, channel_id=None, phase=None, is_start=False, success=False, notes=None):
-    
-    current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    if is_start:
-        cursor.execute('''
-            INSERT INTO ScanInfo (scan_id, channel_id, phase, start_time, success, notes)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE start_time=%s, success=%s, notes=%s
-        ''', (scan_id, channel_id, phase, current_time, success, notes, current_time, success, notes))
-    else:
-        cursor.execute('''
-            UPDATE ScanInfo
-            SET end_time=%s, success=%s, notes=%s
-            WHERE channel_id=%s AND phase=%s
-        ''', (current_time, success, notes, channel_id, phase))
-        
-    connection.commit()
+            if is_start:
+                cursor.execute('''
+                    INSERT INTO ScanInfo (scan_id, channel_id, phase, start_time, success, notes)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE start_time=%s, success=%s, notes=%s
+                ''', (scan_id, channel_id, phase, current_time, success, notes, current_time, success, notes))
+            else:
+                cursor.execute('''
+                    UPDATE ScanInfo
+                    SET end_time=%s, success=%s, notes=%s
+                    WHERE channel_id=%s AND phase=%s
+                ''', (current_time, success, notes, channel_id, phase))
+                
+        connection.commit()
 
 async def insert_channel_info(scan_id, channel_info):
-   
-    try:
-        cursor.execute('''
-            INSERT INTO Channels (
-                scan_id,
-                channel_id,
-                channel_title,
-                channel_description,
-                total_subs_count,
-                total_videos_count,
-                total_views_count,
-                partial_likes_count,
-                partial_comments_count,
-                partial_views_count,
-                channel_created_date,
-                channel_logo_url
-            )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-                scan_id=VALUES(scan_id),
-                channel_title=VALUES(channel_title),
-                channel_description=VALUES(channel_description),
-                total_subs_count=VALUES(total_subs_count),
-                total_videos_count=VALUES(total_videos_count),
-                total_views_count=VALUES(total_views_count),
-                channel_created_date=VALUES(channel_created_date),
-                channel_logo_url=VALUES(channel_logo_url)
-        ''', (
-            scan_id,
-            channel_info['channel_id'],
-            channel_info['channel_title'],
-            channel_info['channel_description'],
-            channel_info['subscriber_count'],
-            channel_info['total_video_count'],
-            channel_info['total_views_count'],
-            0,
-            0,
-            0,
-            channel_info['channel_created_date'],
-            json.dumps(channel_info['channel_logo_url']),
-        ))
-    except pymysql.IntegrityError as e:
-        pass
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute('''
+                    INSERT INTO Channels (
+                        scan_id,
+                        channel_id,
+                        channel_title,
+                        channel_description,
+                        total_subs_count,
+                        total_videos_count,
+                        total_views_count,
+                        partial_likes_count,
+                        partial_comments_count,
+                        partial_views_count,
+                        channel_created_date,
+                        channel_logo_url
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE
+                        scan_id=VALUES(scan_id),
+                        channel_title=VALUES(channel_title),
+                        channel_description=VALUES(channel_description),
+                        total_subs_count=VALUES(total_subs_count),
+                        total_videos_count=VALUES(total_videos_count),
+                        total_views_count=VALUES(total_views_count),
+                        channel_created_date=VALUES(channel_created_date),
+                        channel_logo_url=VALUES(channel_logo_url)
+                ''', (
+                    scan_id,
+                    channel_info['channel_id'],
+                    channel_info['channel_title'],
+                    channel_info['channel_description'],
+                    channel_info['subscriber_count'],
+                    channel_info['total_video_count'],
+                    channel_info['total_views_count'],
+                    0,
+                    0,
+                    0,
+                    channel_info['channel_created_date'],
+                    json.dumps(channel_info['channel_logo_url']),
+                ))
+            except pymysql.IntegrityError as e:
+                pass
 
-    connection.commit()
+        connection.commit()
     
 async def update_channel_partialData(channel_id, partial_likes_count, partial_comments_count, partial_views_count):
     
@@ -113,89 +118,98 @@ async def update_channel_partialData(channel_id, partial_likes_count, partial_co
             partial_views_count = %s
         WHERE channel_id = %s
     '''
-
-    cursor.execute(update_query, (partial_likes_count, partial_comments_count, partial_views_count, channel_id))
-    connection.commit()
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(update_query, (partial_likes_count, partial_comments_count, partial_views_count, channel_id))
+        connection.commit()
     
 async def insert_videos_info(df):
     video_data = df.to_records(index=False)
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            try:
+                video_data_tuples = [tuple(record) for record in video_data]
 
-    try:
-        video_data_tuples = [tuple(record) for record in video_data]
+                cursor.executemany('''
+                    INSERT INTO Videos (
+                        channel_id,
+                        vid_id,
+                        vid_title,
+                        vid_view_cnt,
+                        vid_like_cnt,
+                        vid_comment_cnt,
+                        vid_url,
+                        vid_desc,
+                        vid_duration,
+                        vid_published_at,
+                        vid_thumbnail
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE
+                        vid_title=VALUES(vid_title),
+                        vid_view_cnt=VALUES(vid_view_cnt),
+                        vid_like_cnt=VALUES(vid_like_cnt),
+                        vid_comment_cnt=VALUES(vid_comment_cnt),
+                        vid_url=VALUES(vid_url),
+                        vid_desc=VALUES(vid_desc),
+                        vid_duration=VALUES(vid_duration),
+                        vid_published_at=VALUES(vid_published_at),
+                        vid_thumbnail=VALUES(vid_thumbnail)
+                ''', video_data_tuples)
+            except pymysql.IntegrityError as e:
+                pass
 
-        cursor.executemany('''
-            INSERT INTO Videos (
-                channel_id,
-                vid_id,
-                vid_title,
-                vid_view_cnt,
-                vid_like_cnt,
-                vid_comment_cnt,
-                vid_url,
-                vid_desc,
-                vid_duration,
-                vid_published_at,
-                vid_thumbnail
-            )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-                vid_title=VALUES(vid_title),
-                vid_view_cnt=VALUES(vid_view_cnt),
-                vid_like_cnt=VALUES(vid_like_cnt),
-                vid_comment_cnt=VALUES(vid_comment_cnt),
-                vid_url=VALUES(vid_url),
-                vid_desc=VALUES(vid_desc),
-                vid_duration=VALUES(vid_duration),
-                vid_published_at=VALUES(vid_published_at),
-                vid_thumbnail=VALUES(vid_thumbnail)
-        ''', video_data_tuples)
-    except pymysql.IntegrityError as e:
-        pass
+        connection.commit()
 
-    connection.commit()
-
-    
 async def insert_highlvl_cmntInfo(df):
     comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
     comments_data_tuples = [tuple(record) for record in comments_data]
-    try:
-        cursor.executemany('''
-            INSERT INTO Comments_Unfiltered (vid_id, comment_id, comment) VALUES (%s, %s, %s)
-            ON DUPLICATE KEY UPDATE comment=VALUES(comment)
-        ''', comments_data_tuples)
-    except pymysql.IntegrityError as e:
-        pass
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            try:
+                cursor.executemany('''
+                    INSERT INTO Comments_Unfiltered (vid_id, comment_id, comment) VALUES (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE comment=VALUES(comment)
+                ''', comments_data_tuples)
+            except pymysql.IntegrityError as e:
+                pass
 
-    connection.commit()
+        connection.commit()
     
 async def insert_highlvl_filtered_cmntInfo(df):
     comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
     comments_data_tuples = [tuple(record) for record in comments_data]
-    try:
-        cursor.executemany('''
-            INSERT INTO Comments_filtered (vid_id, comment_id, comment) VALUES (%s, %s, %s)
-            ON DUPLICATE KEY UPDATE comment=VALUES(comment)
-        ''', comments_data_tuples)
-    except pymysql.IntegrityError as e:
-        pass
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            try:
+                cursor.executemany('''
+                    INSERT INTO Comments_filtered (vid_id, comment_id, comment) VALUES (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE comment=VALUES(comment)
+                ''', comments_data_tuples)
+            except pymysql.IntegrityError as e:
+                pass
 
-    connection.commit()
+        connection.commit()
 
 async def insert_hlSentiComments(df):
     comments_data = df[['Video ID', 'Comment ID', 'Comments', 'Sentiment']].to_records(index=False)
     comments_data_tuples = [tuple(record) for record in comments_data]
-    cursor.executemany('''
-        INSERT INTO Comments_SentimentAnalysis (vid_id, comment_id, comment, sentiment) VALUES (%s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE comment=VALUES(comment), sentiment=VALUES(sentiment)
-    ''', comments_data_tuples)
-    
-    connection.commit()
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            cursor.executemany('''
+                INSERT INTO Comments_SentimentAnalysis (vid_id, comment_id, comment, sentiment) VALUES (%s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE comment=VALUES(comment), sentiment=VALUES(sentiment)
+            ''', comments_data_tuples)
+            
+        connection.commit()
 
 async def insert_EmojiFreq(videoID, freqDict):
     freqDictString = str(freqDict)
     query = "INSERT INTO Emoji_Frequency (vid_id, highlvl_freq) VALUES (%s, %s) ON DUPLICATE KEY UPDATE highlvl_freq=VALUES(highlvl_freq)"
-    cursor.execute(query, (videoID, freqDictString))
-    connection.commit()
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (videoID, freqDictString))
+        connection.commit()
     
 async def insert_video_rankings(videoID, keyword, video_data):
     query = '''
@@ -249,20 +263,21 @@ async def insert_video_rankings(videoID, keyword, video_data):
         except Exception as e:
             print(e)
             formatted_date = video["Dt Posted"]
+        with pymysql.connect(**conn_params) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (
+                    videoID,
+                    keyword,
+                    results_vidID,
+                    results_vidurl,
+                    results_vidTitle,
+                    results_vidDesc,
+                    formatted_duration,
+                    views_count,
+                    formatted_date
+                ))
 
-        cursor.execute(query, (
-            videoID,
-            keyword,
-            results_vidID,
-            results_vidurl,
-            results_vidTitle,
-            results_vidDesc,
-            formatted_duration,
-            views_count,
-            formatted_date
-        ))
-
-    connection.commit()    
+            connection.commit()    
 
 def insert_data_to_video_stats(df):
     values = df[['channel_id', 'video_id', 'date', 'title', 'view_count', 'like_count', 'comment_count', 'category']].values.tolist()
@@ -277,82 +292,99 @@ def insert_data_to_video_stats(df):
         vid_comment_cnt = VALUES(vid_comment_cnt),
         category = VALUES(category)
     '''
-    cursor.executemany(sql, values)
-    connection.commit()
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            cursor.executemany(sql, values)
+        connection.commit()
 
 def insert_data_to_monthly_stats(df):
-    for _, row in df.iterrows():
-        channel_id = row['channel_id']
-        date = row['date']
-        channel_subs = row['channel_subs']
-        overall_views = row['overall_views']
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            
+            for _, row in df.iterrows():
+                channel_id = row['channel_id']
+                date = row['date']
+                channel_subs = row['channel_subs']
+                overall_views = row['overall_views']
 
-        # Insert a row into MonthlyStats table
-        cursor.execute('''
-            INSERT INTO MonthlyStats (channel_id, date, channel_subs, overall_views)
-            VALUES (%s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-            channel_subs = VALUES(channel_subs),
-            overall_views = VALUES(overall_views)
-        ''', (channel_id, date, channel_subs, overall_views))
+                # Insert a row into MonthlyStats table
+                cursor.execute('''
+                    INSERT INTO MonthlyStats (channel_id, date, channel_subs, overall_views)
+                    VALUES (%s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE
+                    channel_subs = VALUES(channel_subs),
+                    overall_views = VALUES(overall_views)
+                ''', (channel_id, date, channel_subs, overall_views))
 
-    connection.commit()
+        connection.commit()
 
 async def get_FhlComments(vid_id):
-    query = f"SELECT * FROM Comments_filtered WHERE vid_id = '{vid_id}'"
-    cursor.execute(query)
-    data = cursor.fetchall()
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            query = f"SELECT * FROM Comments_filtered WHERE vid_id = '{vid_id}'"
+            cursor.execute(query)
+            data = cursor.fetchall()
     columns = ['Video ID', 'Comment ID', 'Comments']
     df = pd.DataFrame(data, columns=columns)
     return df
 
 async def get_MhlComments(vid_id):
-    query = f"SELECT * FROM Comments_Unfiltered WHERE vid_id = '{vid_id}'"
-    cursor.execute(query)
-    data = cursor.fetchall()
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            query = f"SELECT * FROM Comments_Unfiltered WHERE vid_id = '{vid_id}'"
+            cursor.execute(query)
+            data = cursor.fetchall()
     columns = ['Video ID', 'Comment ID', 'Comments']
     df = pd.DataFrame(data, columns=columns)
     return df
 
 
 async def get_channel_name(channel_id):
-    cursor.execute('SELECT channel_title FROM Channels WHERE channel_id = %s', (channel_id,))
-    result = cursor.fetchone()
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT channel_title FROM Channels WHERE channel_id = %s', (channel_id,))
+            result = cursor.fetchone()
     return result[0] if result else None
 
 async def retrieve_comments_by_sentiment(table_name, videoID, sentiment):
-    query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = %s AND sentiment = %s"
-    cursor.execute(query, (videoID, sentiment))
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = %s AND sentiment = %s"
+            cursor.execute(query, (videoID, sentiment))
 
-    comments = []
-    for row in cursor.fetchall():
-        comment = {
-            "comment_id": row[1],
-            "comment": row[2],
-            "sentiment": row[3]
-        }
-        comments.append(comment)
+            comments = []
+            for row in cursor.fetchall():
+                comment = {
+                    "comment_id": row[1],
+                    "comment": row[2],
+                    "sentiment": row[3]
+                }
+                comments.append(comment)
 
     return {videoID: comments}
 
 async def retrieve_all_comments(table_name, videoID):
-    query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = %s"
-    cursor.execute(query, (videoID,))
-    comments = []
-    for row in cursor.fetchall():
-        comment = {
-            "comment_id": row[1],
-            "comment": row[2],
-            "sentiment": row[3]
-        }
-        comments.append(comment)    
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = %s"
+            cursor.execute(query, (videoID,))
+            comments = []
+            for row in cursor.fetchall():
+                comment = {
+                    "comment_id": row[1],
+                    "comment": row[2],
+                    "sentiment": row[3]
+                }
+                comments.append(comment)    
 
     return {videoID: comments}
 
 async def get_videos_by_channelID(channelID):
-    query = "SELECT vid_id, vid_title, vid_view_cnt, vid_like_cnt, vid_comment_cnt, vid_url, vid_desc, vid_duration, vid_published_at, vid_thumbnail FROM Videos WHERE channel_id = %s"
-    cursor.execute(query, (channelID,))
-    rows = cursor.fetchall()
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            query = "SELECT vid_id, vid_title, vid_view_cnt, vid_like_cnt, vid_comment_cnt, vid_url, vid_desc, vid_duration, vid_published_at, vid_thumbnail FROM Videos WHERE channel_id = %s"
+            cursor.execute(query, (channelID,))
+            rows = cursor.fetchall()
 
     videos = {}
     for row in rows:
@@ -374,9 +406,11 @@ async def get_videos_by_channelID(channelID):
 
 
 async def get_videoids_by_channelID(channelID):
-    query = "SELECT vid_id FROM Videos WHERE channel_id = %s"
-    cursor.execute(query, (channelID,))
-    rows = cursor.fetchall()
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            query = "SELECT vid_id FROM Videos WHERE channel_id = %s"
+            cursor.execute(query, (channelID,))
+            rows = cursor.fetchall()
 
     videos = []
     for row in rows:
@@ -387,12 +421,14 @@ async def get_videoids_by_channelID(channelID):
 
 
 async def get_user_requests(scan_id):
-    cursor.execute('''
-        SELECT * FROM Channels
-        WHERE scan_id = %s
-    ''', (scan_id,))
+    with pymysql.connect(**conn_params) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                SELECT * FROM Channels
+                WHERE scan_id = %s
+            ''', (scan_id,))
 
-    rows = cursor.fetchall()
+            rows = cursor.fetchall()
     columns = [column[0] for column in cursor.description]
     data = []
 
