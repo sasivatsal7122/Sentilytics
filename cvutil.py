@@ -32,8 +32,6 @@ def getLatest_videos(channelID):
         video_like_cnt = video_statistics.get('likeCount', 0)
         video_comment_cnt = video_statistics.get('commentCount', 0)
         
-        print(video_statistics)
-
         video_details.append({
                     'video_id': video_id,
                     'title': video_title,
