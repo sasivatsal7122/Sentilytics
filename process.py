@@ -82,7 +82,7 @@ async def scrape_videos_info(scanID: str,channelID: str,channelUsername: str):
     
     completion_message = f"For Channel: {channelUsername}, Scraping of Channel Info and Videos Info completed"
     await insert_scan_info(scan_id = scanID,channel_id= channelID, phase="scrape_channel", notes=completion_message,success=True)
-    await make_post_request(f"http://0.0.0.0:8000/scrape_hlcomments/?scanID={scanID}&channelID={channelID}")
+    await make_post_request(f"http://0.0.0.0:8001/scrape_hlcomments/?scanID={scanID}&channelID={channelID}")
     
 
 async def scrape_channel_info(scanID,channel_username,background_tasks: BackgroundTasks):
