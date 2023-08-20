@@ -162,7 +162,7 @@ def robert(robert_df):
     return robertSenti_df
     
     
-async def performSentiandVoting(master_comments_df,comments_df,videoID):
+def performSentiandVoting(master_comments_df,comments_df,videoID):
     
     comment_ids = list(comments_df['Comment ID'].to_list())
     
@@ -292,7 +292,7 @@ async def performSentilytics(scanID, channelID):
             comments_df = await get_FhlComments(videoID)
             master_comments_df = await get_MhlComments(videoID)
 
-            hlSenti_df = await performSentiandVoting(master_comments_df,comments_df,videoID)
+            hlSenti_df = performSentiandVoting(master_comments_df,comments_df,videoID)
         
             from database import insert_hlSentiComments    
             await insert_hlSentiComments(hlSenti_df)
