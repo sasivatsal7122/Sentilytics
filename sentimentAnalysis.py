@@ -287,7 +287,9 @@ async def performSentilytics(scanID, channelID):
         
         from database import get_FhlComments
         from database import get_MhlComments
-        
+        print("======================")
+        print("Starting Sentiment Analysis for channel: %s"%(channelName))
+        print("======================")
         for videoID in videoIDs:
             comments_df = await get_FhlComments(videoID)
             master_comments_df = await get_MhlComments(videoID)
