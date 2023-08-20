@@ -64,6 +64,11 @@ async def get_hlcomments(background_tasks: BackgroundTasks,
     background_tasks.add_task(scrape_HighLvlcomments,scanID,channelID)
     return JSONResponse(content={"message": "Comments Scraping initiated"})
 
+
+# helper function for scrape channel endpoint
+def perfSenti(scanID, channelID, background_tasks):
+    background_tasks.add_task(performSentilytics, scanID,channelID)
+    
 # Define the "perform_sentilytics" route
 @router.get("/perform_sentilytics/")
 async def perform_sentilytics(background_tasks: BackgroundTasks, 
@@ -73,7 +78,7 @@ async def perform_sentilytics(background_tasks: BackgroundTasks,
     Endpoint to perform sentiment analysis on comments.
     """    
     await insert_scan_info(scan_id = scanID, channel_id=channelID, phase='perform_sentilytics',is_start=True)
-    background_tasks.add_task(performSentilytics, scanID,channelID)
+    background_tasks.add_task(perfSenti, scanID,channelID,background_tasks)
     return JSONResponse(content={"message": "Sentiment Analysis initiated"})
 
 
