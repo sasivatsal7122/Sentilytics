@@ -177,6 +177,7 @@ async def makeReplication(scanID,channelID):
             ))
 
     conn.commit()
+    conn.close()
     
     completion_message = "Replication Done."
     await insert_scan_info(scan_id = scanID,channel_id=channelID, phase='make_replica',notes=completion_message,success=True)
