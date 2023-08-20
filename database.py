@@ -282,6 +282,8 @@ async def insert_video_rankings(videoID, keyword, video_data):
 def insert_data_to_video_stats(df):
     values = df[['channel_id', 'video_id', 'date', 'title', 'view_count', 'like_count', 'comment_count', 'category']].values.tolist()
     values = [tuple([str(val) if isinstance(val, pd.Timestamp) else val for val in row]) for row in values]
+    values = [(row[:4]) + (int(row[4]) if row[4] != 'N/A' else None) + row[5:] for row in values]
+    
     sql = '''
         INSERT INTO VideoStats (channel_id, vid_id, date, vid_title, vid_view_cnt, vid_like_cnt, vid_comment_cnt, category)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -292,10 +294,12 @@ def insert_data_to_video_stats(df):
         vid_comment_cnt = VALUES(vid_comment_cnt),
         category = VALUES(category)
     '''
+    
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
             cursor.executemany(sql, values)
         connection.commit()
+
 
 def insert_data_to_monthly_stats(df):
     with pymysql.connect(**conn_params) as connection:
