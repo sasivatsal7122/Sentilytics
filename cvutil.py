@@ -28,9 +28,11 @@ def getLatest_videos(channelID):
         video_stats_response = video_stats_request.execute()
 
         video_statistics = video_stats_response['items'][0]['statistics']
-        video_view_cnt = video_statistics.get('viewCount', 'N/A')
-        video_like_cnt = video_statistics.get('likeCount', 'N/A')
-        video_comment_cnt = video_statistics.get('commentCount', 'N/A')
+        video_view_cnt = video_statistics.get('viewCount', 0)
+        video_like_cnt = video_statistics.get('likeCount', 0)
+        video_comment_cnt = video_statistics.get('commentCount', 0)
+        
+        print(video_statistics)
 
         video_details.append({
                     'video_id': video_id,
@@ -72,10 +74,9 @@ def getMostviewed_videos(channelID):
         video_id = video['id']['videoId']
         video_title = video['snippet']['title']
         video_date = video['snippet']['publishedAt']
-        video_view_cnt = video_stats[video_id].get('viewCount', 'N/A')
-        video_like_cnt = video_stats[video_id].get('likeCount', 'N/A')
-        video_comment_cnt = video_stats[video_id].get('commentCount', 'N/A')
-
+        video_view_cnt = video_stats[video_id].get('viewCount', 0)
+        video_like_cnt = video_stats[video_id].get('likeCount', 0)
+        video_comment_cnt = video_stats[video_id].get('commentCount', 0)
 
         video_details.append({
                     'video_id': video_id,
@@ -118,9 +119,9 @@ def getHighestrated_videos(channelID):
         video_id = video['id']['videoId']
         video_title = video['snippet']['title']
         video_date = video['snippet']['publishedAt']
-        video_view_count = video_stats[video_id].get('viewCount', 'N/A')
-        video_like_count = video_stats[video_id].get('likeCount', 'N/A')
-        video_comment_count = video_stats[video_id].get('commentCount', 'N/A')
+        video_view_count = video_stats[video_id].get('viewCount', 0)
+        video_like_count = video_stats[video_id].get('likeCount', 0)
+        video_comment_count = video_stats[video_id].get('commentCount', 0)
 
         video_details.append({
             'video_id': video_id,
