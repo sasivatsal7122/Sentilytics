@@ -1,21 +1,18 @@
-from fastapi import FastAPI, APIRouter, Query, BackgroundTasks
+from fastapi import FastAPI, APIRouter, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from process import scrape_channel_info,scrape_HighLvlcomments
-import httpx
 
-from sentimentAnalysis import performSentilytics
-
-from database import get_channel_name, insert_scan_info, get_DevKey
-
-from ytranker import start_videoRanker
-from cvStats import start_cvStats
+#from process import scrape_channel_info,scrape_HighLvlcomments
+# from sentimentAnalysis import performSentilytics
+# from ytranker import start_videoRanker
+# from cvStats import start_cvStats
+# from make_replication import makeReplication
 
 from getMethods import get_channel_info,get_monthly_stats,get_video_stats,\
                        get_emoji_analysis,select_data_by_scan_id
 
-from make_replication import makeReplication
-
+from database import get_channel_name, insert_scan_info
+from celery_conf import celeryApp
 
 #gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 main:app
 app = FastAPI()
@@ -35,76 +32,61 @@ router = APIRouter()
 async def root():
     return {"message": "Hello World"}
 
-# helper function for scrape channel endpoint
-def scrapeCHannelUtil(scanID, channelUsername, background_tasks):
-    background_tasks.add_task(scrape_channel_info, scanID, channelUsername, background_tasks)
-  
 # Define the "scrape_channel" route
 @router.get("/scrape_channel/")
-async def scrape_channel(background_tasks: BackgroundTasks,
-                         scanID: str = Query(..., description="Scan ID"),
+async def scrape_channel(scanID: str = Query(..., description="Scan ID"),
                          channelUsername: str = Query(..., description="Channel Username")):
     """
     Endpoint to scrape channel information.
     """
-    await insert_scan_info(scan_id = scanID,channel_id="channelID", phase='scrape_channel', is_start=True)
-    background_tasks.add_task(scrapeCHannelUtil, scanID, channelUsername,background_tasks)
+    try:
+        await insert_scan_info(scan_id=scanID, channel_id="channelID", phase='scrape_channel', is_start=True)
+    except:
+        return JSONResponse(content={"message": "Scan ID already exists"})
+    celeryApp.send_task("celery_tasks.scrape_channel_info_task", args=[scanID, channelUsername])
     return JSONResponse(content={"message": "Scraping initiated"})
 
 # Define the "get_hlcomments" route
 @router.get("/scrape_hlcomments/")
-async def get_hlcomments(background_tasks: BackgroundTasks,
-                         scanID: str = Query(..., description="Scan ID"),
+async def get_hlcomments(scanID: str = Query(..., description="Scan ID"),
                          channelID: str = Query(..., description="Channel ID")):
     """
     Endpoint to get high-level comments.
     """
-
     await insert_scan_info(scan_id = scanID,channel_id=channelID, phase='scrape_hlcomments',is_start=True)
-    background_tasks.add_task(scrape_HighLvlcomments,scanID,channelID)
+    celeryApp.send_task("celery_tasks.scrape_HighLvlcomments_task", args=[scanID, channelID])
     return JSONResponse(content={"message": "Comments Scraping initiated"})
 
-
-# helper function for scrape channel endpoint
-def perfSenti(scanID, channelID, background_tasks):
-    background_tasks.add_task(performSentilytics, scanID,channelID)
-    
 # Define the "perform_sentilytics" route
 @router.get("/perform_sentilytics/")
-async def perform_sentilytics(background_tasks: BackgroundTasks, 
-                              scanID: str = Query(..., description="Scan ID"),
+async def perform_sentilytics(scanID: str = Query(..., description="Scan ID"),
                               channelID: str = Query(..., description="Channel ID")):
     """
     Endpoint to perform sentiment analysis on comments.
     """    
     await insert_scan_info(scan_id = scanID, channel_id=channelID, phase='perform_sentilytics',is_start=True)
-    background_tasks.add_task(perfSenti, scanID,channelID,background_tasks)
+    celeryApp.send_task("celery_tasks.performSentilytics_task", args=[scanID, channelID])
     return JSONResponse(content={"message": "Sentiment Analysis initiated"})
-
-
-async def perform_youtube_ranker(background_tasks: BackgroundTasks, videoID: str, keyword: str):
-    background_tasks.add_task(start_videoRanker, videoID, keyword)
 
 # Define the "perform_youtube_ranker" route
 @router.get("/perform_youtube_ranker/")
-async def perform_youtube_ranker_route(background_tasks: BackgroundTasks,scanID: str = Query(..., description="Scan ID"), videoID: str = Query(..., description="Video ID"), keyword: str = Query(..., description="Keyword")):
+async def perform_youtube_ranker_route(scanID: str = Query(..., description="Scan ID"), videoID: str = Query(..., description="Video ID"), keyword: str = Query(..., description="Keyword")):
     """
     Endpoint to perform YouTube ranking.
     """
     await insert_scan_info(scan_id = scanID,channel_id=videoID, phase='perform_youtube_ranker',is_start=True)
-    await perform_youtube_ranker(background_tasks, videoID, keyword)
+    celeryApp.send_task("celery_tasks.start_videoRanker_task", args=[videoID, keyword])
     return JSONResponse(content={"message": "YouTube ranking initiated"})
 
-
+# Define the "cvstats" route
 @router.get("/cvstats/")
-async def scrape_cvStats(background_tasks: BackgroundTasks, 
-                         scanID: str = Query(..., description="Scan ID"),
+async def scrape_cvStats( scanID: str = Query(..., description="Scan ID"),
                          channelID: str = Query(..., description="Channel ID")):
     """
     Endpoint to perform Channel and Video Statistics.
     """
     channelName = await get_channel_name(channelID)
-    background_tasks.add_task(start_cvStats, scanID, channelID, channelName)
+    celeryApp.send_task("celery_tasks.start_cvStats_task", args=[scanID, channelID, channelName])
     return JSONResponse(content={"message": "CV Stats initiated"})
 
 @router.get("/make_replica/")
@@ -113,7 +95,7 @@ async def scrape_cvStats(scanID: str = Query(..., description="Scan ID"),channel
     Endpoint to make data replication for a given scan/Scan id.
     """
     await insert_scan_info(scan_id = scanID,channel_id=channelID, phase='make_replica',is_start=True)
-    await makeReplication(scanID,channelID)
+    celeryApp.send_task("celery_tasks.makeReplication_task", args=[scanID, channelID])
     return JSONResponse(content={"message": "Replication Done"})
 
 # ====  GET METHODS  ====

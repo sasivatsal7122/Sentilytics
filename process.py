@@ -17,7 +17,7 @@ from database import insert_channel_info,insert_videos_info,\
     get_channel_name, get_videoids_by_channelID, update_scaninfo_channelid
 
 from emojiAnalysis import calcEmojiFreq
-
+from celery_conf import celeryApp
 
 async def scrape_videos_info(scanID: str,channelID: str,channelUsername: str):
     """
@@ -82,10 +82,9 @@ async def scrape_videos_info(scanID: str,channelID: str,channelUsername: str):
     
     completion_message = f"For Channel: {channelUsername}, Scraping of Channel Info and Videos Info completed"
     await insert_scan_info(scan_id = scanID,channel_id= channelID, phase="scrape_channel", notes=completion_message,success=True)
-    await make_post_request(f"http://0.0.0.0:8001/scrape_hlcomments/?scanID={scanID}&channelID={channelID}")
+    await make_post_request(f"http://0.0.0.0:8000/scrape_hlcomments/?scanID={scanID}&channelID={channelID}")
     
-
-async def scrape_channel_info(scanID,channel_username,background_tasks: BackgroundTasks):
+async def scrape_channel_info(scanID,channel_username):
     
     DEVELOPER_KEY,_,_ = get_DevKey()
     response = requests.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channel_username}&type=channel&key={DEVELOPER_KEY}").json()
@@ -137,12 +136,11 @@ async def scrape_channel_info(scanID,channel_username,background_tasks: Backgrou
         channel_info
         )
         print("Channel info inserted into Database successfully")
-        background_tasks.add_task(scrape_videos_info,scanID, channel_id,channel_username)
-        
+        celeryApp.send_task("celery_tasks.scrape_videos_info_task", args=[scanID, channel_id,channel_username])
+   
     except HttpError as e:
         print(f'An HTTP error occurred: {e}')
         return {"Error": "An HTTP error occurred {}".format(e)}
-
 
 
 def generate_comment_id(video_id, comment_text):
@@ -152,7 +150,6 @@ def generate_comment_id(video_id, comment_text):
     comment_id = comment_hash[:8]
 
     return comment_id
-
 
 async def scrape_HighLvlcomments(scanID, channelID):
     

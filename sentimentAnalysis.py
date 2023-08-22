@@ -16,7 +16,6 @@ import asyncio
 from database import insert_scan_info
 import warnings
 
-
 def vader(vader_df):
     vader_df['Comments'] = vader_df['Comments'].astype(str)
     vader_df['Comments'] = vader_df['Comments'].apply(lambda x: ' '.join([w for w in x.split() if len(w)>3]))
