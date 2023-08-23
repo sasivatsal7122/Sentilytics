@@ -2,5 +2,5 @@
 
 echo "pushing the code...."
 
-git push origin rspi
+git push origin celery
 

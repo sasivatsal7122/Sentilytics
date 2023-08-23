@@ -159,7 +159,6 @@ async def scrape_video_data(driver: webdriver.Firefox) -> dict:
 
     return youtube_data
 
-
 async def start_videoRanker(videoID,keyword):
     print("Starting to Scrape....")
     print(f"Keyword : {keyword}\nVideo ID : {videoID}")
