@@ -270,32 +270,32 @@ def create_comments_json(hlSenti_df):
 import asyncio
 sentiment_analysis_lock = asyncio.Lock()
 
-async def performSentilytics(scanID, channelID):
-    async with sentiment_analysis_lock:
-        from database import get_channel_name,get_videoids_by_channelID
-        
-        channelName = await get_channel_name(channelID)
-        videoIDs = await get_videoids_by_channelID(channelID)
-        
-        from database import get_FhlComments
-        from database import get_MhlComments
-        print("======================")
-        print("Starting Sentiment Analysis for channel: %s"%(channelName))
-        print("======================")
-        for videoID in videoIDs:
-            comments_df = await get_FhlComments(videoID)
-            master_comments_df = await get_MhlComments(videoID)
-
-            hlSenti_df = performSentiandVoting(master_comments_df,comments_df,videoID)
-        
-            from database import insert_hlSentiComments    
-            await insert_hlSentiComments(hlSenti_df)
-            
-        completion_message = f"Sentiment Analysis completed for channel: {channelName}."
-        await insert_scan_info(scan_id = scanID,channel_id= channelID,phase="perform_sentilytics", notes=completion_message,success=True)
-        await make_post_request(f"http://0.0.0.0:8000/cvstats/?scanID={scanID}&channelID={channelID}")
-     
+def performSentilytics(scanID, channelID):
     
+    from database import get_channel_name,get_videoids_by_channelID
+    
+    channelName = get_channel_name(channelID)
+    videoIDs = get_videoids_by_channelID(channelID)
+    
+    from database import get_FhlComments
+    from database import get_MhlComments
+    print("======================")
+    print("Starting Sentiment Analysis for channel: %s"%(channelName))
+    print("======================")
+    for videoID in videoIDs:
+        comments_df = get_FhlComments(videoID)
+        master_comments_df = get_MhlComments(videoID)
+
+        hlSenti_df = performSentiandVoting(master_comments_df,comments_df,videoID)
+    
+        from database import insert_hlSentiComments    
+        insert_hlSentiComments(hlSenti_df)
+        
+    completion_message = f"Sentiment Analysis completed for channel: {channelName}."
+    insert_scan_info(scan_id = scanID,channel_id= channelID,phase="perform_sentilytics", notes=completion_message,success=True)
+    make_post_request(f"http://0.0.0.0:8000/cvstats/?scanID={scanID}&channelID={channelID}")
+    
+
     
 
     

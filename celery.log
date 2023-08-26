@@ -722,3 +722,470 @@ you should set broker_connection_retry_on_startup to True.
 [2023-08-22 21:27:52,999: WARNING/ForkPoolWorker-1] Skipping comment with error: The expanded size of the tensor (717) must match the existing size (514) at non-singleton dimension 1.  Target sizes: [1, 717].  Tensor sizes: [1, 514]
 [2023-08-22 21:27:57,340: WARNING/ForkPoolWorker-1] Skipping comment with error: The expanded size of the tensor (562) must match the existing size (514) at non-singleton dimension 1.  Target sizes: [1, 562].  Tensor sizes: [1, 514]
 [2023-08-22 21:28:07,197: WARNING/ForkPoolWorker-1] Skipping comment with error: The expanded size of the tensor (526) must match the existing size (514) at non-singleton dimension 1.  Target sizes: [1, 526].  Tensor sizes: [1, 514]
+[2023-08-22 21:29:23,191: WARNING/ForkPoolWorker-1] Skipping comment with error: The expanded size of the tensor (775) must match the existing size (514) at non-singleton dimension 1.  Target sizes: [1, 775].  Tensor sizes: [1, 514]
+[2023-08-22 21:30:21,672: WARNING/ForkPoolWorker-1] Skipping comment with error: The expanded size of the tensor (880) must match the existing size (514) at non-singleton dimension 1.  Target sizes: [1, 880].  Tensor sizes: [1, 514]
+[2023-08-22 21:30:43,273: WARNING/ForkPoolWorker-1] Skipping comment with error: The expanded size of the tensor (789) must match the existing size (514) at non-singleton dimension 1.  Target sizes: [1, 789].  Tensor sizes: [1, 514]
+[2023-08-22 21:33:00,686: WARNING/ForkPoolWorker-1] Skipping comment with error: The expanded size of the tensor (538) must match the existing size (514) at non-singleton dimension 1.  Target sizes: [1, 538].  Tensor sizes: [1, 514]
+[2023-08-22 21:34:57,247: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   0002bc1d         5        0         0
+1   0002bc4a         5        0         0
+2   00085f33         0        3         2
+3   001090f4         2        2         1
+4   001095d0         5        0         0
+[2023-08-22 21:38:02,771: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   0011045e         2        0         3
+1   00450f05         5        0         0
+2   00474e57         0        1         4
+3   004ae18b         1        4         0
+4   004e0991         2        2         1
+[2023-08-22 21:38:02,933: WARNING/ForkPoolWorker-1] GET METHOD STATUS CODE [http://0.0.0.0:8000/cvstats/?scanID=347893&channelID=UCBJycsmduvYEL83R_U4JriQ]:
+[2023-08-22 21:38:02,934: WARNING/ForkPoolWorker-1]  
+[2023-08-22 21:38:02,934: WARNING/ForkPoolWorker-1] 200
+[2023-08-22 21:38:02,934: INFO/MainProcess] Task celery_tasks.start_cvStats_task[5823e923-78dc-47b1-9ce4-a030e646ba6c] received
+[2023-08-22 21:38:02,936: INFO/ForkPoolWorker-1] Task celery_tasks.performSentilytics_task[1a77189f-a07f-40aa-b7dc-6e8cc0d1ec9d] succeeded in 2493.045569072001s: None
+[2023-08-22 21:38:03,610: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:38:03,982: WARNING/ForkPoolWorker-1] Channel info inserted into Database successfully
+[2023-08-22 21:38:03,986: INFO/MainProcess] Task celery_tasks.scrape_videos_info_task[e991edbb-bbf2-4780-8abd-cb200dd1ffb0] received
+[2023-08-22 21:38:03,986: INFO/ForkPoolWorker-1] Task celery_tasks.scrape_channel_info_task[f1453a1e-4796-40b7-b408-fc4eb7a4453b] succeeded in 1.0498460449998674s: None
+[2023-08-22 21:38:03,994: WARNING/ForkPoolWorker-1] Starting monthly stats for channel: Marques Brownlee
+[2023-08-22 21:38:07,266: WARNING/ForkPoolWorker-1] Found 30 divs
+[2023-08-22 21:38:07,435: WARNING/ForkPoolWorker-1] Finished monthly stats for channel: Marques Brownlee
+[2023-08-22 21:38:07,577: WARNING/ForkPoolWorker-1] Inserted monthly stats for channel: Marques Brownlee
+[2023-08-22 21:38:07,578: WARNING/ForkPoolWorker-1] Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f00f1b75d50>: Failed to establish a new connection: [Errno 111] Connection refused')': /session/cd5e11daae1554a777794b4851bccbc2
+[2023-08-22 21:38:07,578: WARNING/ForkPoolWorker-1] Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f00f1b759f0>: Failed to establish a new connection: [Errno 111] Connection refused')': /session/cd5e11daae1554a777794b4851bccbc2
+[2023-08-22 21:38:07,579: WARNING/ForkPoolWorker-1] Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f00f1b76fb0>: Failed to establish a new connection: [Errno 111] Connection refused')': /session/cd5e11daae1554a777794b4851bccbc2
+[2023-08-22 21:38:07,583: WARNING/ForkPoolWorker-1] Monthly Stats scraping successful!
+[2023-08-22 21:38:07,585: WARNING/ForkPoolWorker-1] Starting video stats for channel: Marques Brownlee
+[2023-08-22 21:38:07,586: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:38:09,762: WARNING/ForkPoolWorker-1] len of getLatest_videos 20
+[2023-08-22 21:38:09,764: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:38:09,769: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/anaconda3/lib/python3.10/json/decoder.py:353: ResourceWarning: unclosed <ssl.SSLSocket fd=24, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 51148, 0, 0), raddr=('2404:6800:4007:824::200a', 443, 0, 0)>
+  obj, end = self.scan_once(s, idx)
+
+[2023-08-22 21:38:09,769: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/anaconda3/lib/python3.10/json/decoder.py:353: ResourceWarning: unclosed <ssl.SSLSocket fd=25, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 51164, 0, 0), raddr=('2404:6800:4007:824::200a', 443, 0, 0)>
+  obj, end = self.scan_once(s, idx)
+
+[2023-08-22 21:38:10,444: WARNING/ForkPoolWorker-1] len of getMostviewed_videos 20
+[2023-08-22 21:38:10,445: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:38:11,107: WARNING/ForkPoolWorker-1] len of getHighestrated_videos 20
+[2023-08-22 21:38:11,177: WARNING/ForkPoolWorker-1] Inserted video stats for channel: Marques Brownlee
+[2023-08-22 21:38:11,181: WARNING/ForkPoolWorker-1] Video Stats scraping successful!
+[2023-08-22 21:38:11,186: INFO/MainProcess] Task celery_tasks.makeReplication_task[5982bed0-715b-493d-813a-5840405ba5c9] received
+[2023-08-22 21:38:11,186: WARNING/ForkPoolWorker-1] GET METHOD STATUS CODE [http://0.0.0.0:8000/make_replica/?scanID=347893&channelID=UCBJycsmduvYEL83R_U4JriQ]:
+[2023-08-22 21:38:11,187: WARNING/ForkPoolWorker-1]  
+[2023-08-22 21:38:11,187: WARNING/ForkPoolWorker-1] 200
+[2023-08-22 21:38:11,188: INFO/ForkPoolWorker-1] Task celery_tasks.start_cvStats_task[5823e923-78dc-47b1-9ce4-a030e646ba6c] succeeded in 7.198990184999275s: None
+[2023-08-22 21:38:11,676: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/anaconda3/lib/python3.10/json/decoder.py:353: ResourceWarning: unclosed <ssl.SSLSocket fd=24, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 39108, 0, 0), raddr=('2404:6800:4007:824::200a', 443, 0, 0)>
+  obj, end = self.scan_once(s, idx)
+
+[2023-08-22 21:38:11,676: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/anaconda3/lib/python3.10/json/decoder.py:353: ResourceWarning: unclosed <ssl.SSLSocket fd=25, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 44408, 0, 0), raddr=('2404:6800:4007:825::200a', 443, 0, 0)>
+  obj, end = self.scan_once(s, idx)
+
+[2023-08-22 21:38:23,912: WARNING/ForkPoolWorker-1] GET METHOD STATUS CODE [http://0.0.0.0:8000/scrape_hlcomments/?scanID=453589&channelID=UCKZozRVHRYsYHGEyNKuhhdA]:
+[2023-08-22 21:38:23,912: INFO/MainProcess] Task celery_tasks.scrape_HighLvlcomments_task[fc554c26-baf2-4193-96c7-31f5270cbd7e] received
+[2023-08-22 21:38:23,912: WARNING/ForkPoolWorker-1]  
+[2023-08-22 21:38:23,912: WARNING/ForkPoolWorker-1] 200
+[2023-08-22 21:38:23,914: INFO/ForkPoolWorker-1] Task celery_tasks.scrape_videos_info_task[e991edbb-bbf2-4780-8abd-cb200dd1ffb0] succeeded in 12.725160064999727s: None
+[2023-08-22 21:38:29,566: INFO/ForkPoolWorker-1] Task celery_tasks.makeReplication_task[5982bed0-715b-493d-813a-5840405ba5c9] succeeded in 5.650902787001542s: None
+[2023-08-22 21:38:29,570: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:38:31,067: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:38:34,421: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:38:40,631: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:38:42,966: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:38:45,116: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:38:49,687: WARNING/ForkPoolWorker-1] GET METHOD STATUS CODE [http://0.0.0.0:8000/perform_sentilytics/?scanID=453589&channelID=UCKZozRVHRYsYHGEyNKuhhdA]:
+[2023-08-22 21:38:49,687: INFO/MainProcess] Task celery_tasks.performSentilytics_task[7e455eee-ef16-4dbc-b486-2191b9e8e336] received
+[2023-08-22 21:38:49,687: WARNING/ForkPoolWorker-1]  
+[2023-08-22 21:38:49,687: WARNING/ForkPoolWorker-1] 200
+[2023-08-22 21:38:49,688: INFO/ForkPoolWorker-1] Task celery_tasks.scrape_HighLvlcomments_task[fc554c26-baf2-4193-96c7-31f5270cbd7e] succeeded in 20.120947463999983s: None
+[2023-08-22 21:38:49,691: WARNING/ForkPoolWorker-1] ======================
+[2023-08-22 21:38:49,692: WARNING/ForkPoolWorker-1] Starting Sentiment Analysis for channel: Think School
+[2023-08-22 21:38:49,692: WARNING/ForkPoolWorker-1] ======================
+[2023-08-22 21:39:08,848: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   003165db         5        0         0
+1   0084fbed         0        3         2
+2   0158fe21         5        0         0
+3   01f235d7         0        1         4
+4   0290932b         3        2         0
+[2023-08-22 21:40:00,907: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/.local/lib/python3.10/site-packages/numpy/core/_asarray.py:109: ResourceWarning: unclosed <ssl.SSLSocket fd=24, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 56448, 0, 0), raddr=('2404:6800:4007:827::200a', 443, 0, 0)>
+  requirements = {possible_flags[x.upper()] for x in requirements}
+
+[2023-08-22 21:40:00,907: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/.local/lib/python3.10/site-packages/numpy/core/_asarray.py:109: ResourceWarning: unclosed <ssl.SSLSocket fd=25, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 60458, 0, 0), raddr=('2404:6800:4007:824::200a', 443, 0, 0)>
+  requirements = {possible_flags[x.upper()] for x in requirements}
+
+[2023-08-22 21:40:00,907: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/.local/lib/python3.10/site-packages/numpy/core/_asarray.py:109: ResourceWarning: unclosed <ssl.SSLSocket fd=26, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 37458, 0, 0), raddr=('2404:6800:4007:826::200a', 443, 0, 0)>
+  requirements = {possible_flags[x.upper()] for x in requirements}
+
+[2023-08-22 21:40:00,908: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/.local/lib/python3.10/site-packages/numpy/core/_asarray.py:109: ResourceWarning: unclosed <ssl.SSLSocket fd=27, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 34262, 0, 0), raddr=('2404:6800:4007:826::200a', 443, 0, 0)>
+  requirements = {possible_flags[x.upper()] for x in requirements}
+
+[2023-08-22 21:40:00,908: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/.local/lib/python3.10/site-packages/numpy/core/_asarray.py:109: ResourceWarning: unclosed <ssl.SSLSocket fd=28, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 34270, 0, 0), raddr=('2404:6800:4007:826::200a', 443, 0, 0)>
+  requirements = {possible_flags[x.upper()] for x in requirements}
+
+[2023-08-22 21:40:00,908: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/.local/lib/python3.10/site-packages/numpy/core/_asarray.py:109: ResourceWarning: unclosed <ssl.SSLSocket fd=29, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 34282, 0, 0), raddr=('2404:6800:4007:826::200a', 443, 0, 0)>
+  requirements = {possible_flags[x.upper()] for x in requirements}
+
+[2023-08-22 21:40:01,022: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   003b54b5         2        3         0
+1   0040bcf8         0        2         3
+2   00640d88         2        1         2
+3   008ca175         5        0         0
+4   00bf8a53         0        1         4
+[2023-08-22 21:40:58,942: WARNING/ForkPoolWorker-1] Skipping comment with error: The expanded size of the tensor (733) must match the existing size (514) at non-singleton dimension 1.  Target sizes: [1, 733].  Tensor sizes: [1, 514]
+[2023-08-22 21:41:58,383: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   0026f5af         2        3         0
+1   003e8f0a         2        1         2
+2   00630649         5        0         0
+3   01b09712         0        3         2
+4   01d7fe06         3        2         0
+[2023-08-22 21:42:29,274: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   008f5b63         5        0         0
+1   016c783a         5        0         0
+2   01c1f90d         3        2         0
+3   01f75992         0        5         0
+4   030c618a         5        0         0
+[2023-08-22 21:42:41,564: WARNING/ForkPoolWorker-1] Skipping comment with error: The expanded size of the tensor (613) must match the existing size (514) at non-singleton dimension 1.  Target sizes: [1, 613].  Tensor sizes: [1, 514]
+[2023-08-22 21:43:00,201: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   0016bf12         0        1         4
+1   0061b0ec         5        0         0
+2   00eca4b6         3        2         0
+3   015830dc         5        0         0
+4   01657b40         5        0         0
+[2023-08-22 21:43:44,156: WARNING/ForkPoolWorker-1] Skipping comment with error: The expanded size of the tensor (1409) must match the existing size (514) at non-singleton dimension 1.  Target sizes: [1, 1409].  Tensor sizes: [1, 514]
+[2023-08-22 21:44:04,416: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   0036d749         0        5         0
+1   003a6047         2        1         2
+2   005e8caa         2        0         3
+3   009045a6         0        3         2
+4   01370ffc         3        2         0
+[2023-08-22 21:44:04,460: INFO/MainProcess] Task celery_tasks.start_cvStats_task[22ae9f3f-464c-442e-85d5-488b942ed13f] received
+[2023-08-22 21:44:04,460: WARNING/ForkPoolWorker-1] GET METHOD STATUS CODE [http://0.0.0.0:8000/cvstats/?scanID=453589&channelID=UCKZozRVHRYsYHGEyNKuhhdA]:
+[2023-08-22 21:44:04,460: WARNING/ForkPoolWorker-1]  
+[2023-08-22 21:44:04,460: WARNING/ForkPoolWorker-1] 200
+[2023-08-22 21:44:04,461: INFO/ForkPoolWorker-1] Task celery_tasks.performSentilytics_task[7e455eee-ef16-4dbc-b486-2191b9e8e336] succeeded in 314.7724715730001s: None
+[2023-08-22 21:44:04,465: WARNING/ForkPoolWorker-1] Starting monthly stats for channel: Think School
+[2023-08-22 21:44:07,850: WARNING/ForkPoolWorker-1] Found 30 divs
+[2023-08-22 21:44:08,005: WARNING/ForkPoolWorker-1] Finished monthly stats for channel: Think School
+[2023-08-22 21:44:08,078: WARNING/ForkPoolWorker-1] Inserted monthly stats for channel: Think School
+[2023-08-22 21:44:08,079: WARNING/ForkPoolWorker-1] Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f00f3bc7700>: Failed to establish a new connection: [Errno 111] Connection refused')': /session/2383e58b9fe069b20de1baee896f6ad8
+[2023-08-22 21:44:08,079: WARNING/ForkPoolWorker-1] Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f00f3bc76d0>: Failed to establish a new connection: [Errno 111] Connection refused')': /session/2383e58b9fe069b20de1baee896f6ad8
+[2023-08-22 21:44:08,079: WARNING/ForkPoolWorker-1] Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f00f3bc59f0>: Failed to establish a new connection: [Errno 111] Connection refused')': /session/2383e58b9fe069b20de1baee896f6ad8
+[2023-08-22 21:44:08,082: WARNING/ForkPoolWorker-1] Monthly Stats scraping successful!
+[2023-08-22 21:44:08,085: WARNING/ForkPoolWorker-1] Starting video stats for channel: Think School
+[2023-08-22 21:44:08,086: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:44:10,383: WARNING/ForkPoolWorker-1] len of getLatest_videos 20
+[2023-08-22 21:44:10,384: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:44:10,386: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/anaconda3/lib/python3.10/json/decoder.py:353: ResourceWarning: unclosed <ssl.SSLSocket fd=24, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 51490, 0, 0), raddr=('2404:6800:4007:82c::200a', 443, 0, 0)>
+  obj, end = self.scan_once(s, idx)
+
+[2023-08-22 21:44:10,973: WARNING/ForkPoolWorker-1] len of getMostviewed_videos 20
+[2023-08-22 21:44:10,975: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-22 21:44:11,606: WARNING/ForkPoolWorker-1] len of getHighestrated_videos 20
+[2023-08-22 21:44:11,615: WARNING/ForkPoolWorker-1] Inserted video stats for channel: Think School
+[2023-08-22 21:44:11,617: WARNING/ForkPoolWorker-1] Video Stats scraping successful!
+[2023-08-22 21:44:11,623: INFO/MainProcess] Task celery_tasks.makeReplication_task[74e6a849-4db7-4220-9518-1d81d9e03786] received
+[2023-08-22 21:44:11,623: WARNING/ForkPoolWorker-1] GET METHOD STATUS CODE [http://0.0.0.0:8000/make_replica/?scanID=453589&channelID=UCKZozRVHRYsYHGEyNKuhhdA]:
+[2023-08-22 21:44:11,623: WARNING/ForkPoolWorker-1]  
+[2023-08-22 21:44:11,623: WARNING/ForkPoolWorker-1] 200
+[2023-08-22 21:44:11,623: INFO/ForkPoolWorker-1] Task celery_tasks.start_cvStats_task[22ae9f3f-464c-442e-85d5-488b942ed13f] succeeded in 7.1612279350010795s: None
+[2023-08-22 21:44:11,659: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/Data/Senitlytics/getMethods.py:157: ResourceWarning: unclosed <ssl.SSLSocket fd=24, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 59850, 0, 0), raddr=('2404:6800:4007:82b::200a', 443, 0, 0)>
+  data_dict['Comments_SentimentAnalysis'] = [dict(zip(sentiment_columns, row)) for row in sentiment_data]
+
+[2023-08-22 21:44:11,659: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/Data/Senitlytics/getMethods.py:157: ResourceWarning: unclosed <ssl.SSLSocket fd=25, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2405:201:c01b:792c:ee22:3709:817a:689e', 54116, 0, 0), raddr=('2404:6800:4007:811::200a', 443, 0, 0)>
+  data_dict['Comments_SentimentAnalysis'] = [dict(zip(sentiment_columns, row)) for row in sentiment_data]
+
+[2023-08-22 21:44:12,324: INFO/ForkPoolWorker-1] Task celery_tasks.makeReplication_task[74e6a849-4db7-4220-9518-1d81d9e03786] succeeded in 0.6999635270003637s: None
+[2023-08-23 10:31:58,023: WARNING/MainProcess] /home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/worker/consumer/consumer.py:498: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2023-08-23 10:31:58,027: INFO/MainProcess] Connected to redis://0.0.0.0:6379/0
+[2023-08-23 10:31:58,027: WARNING/MainProcess] /home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/worker/consumer/consumer.py:498: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2023-08-23 10:31:58,029: INFO/MainProcess] mingle: searching for neighbors
+[2023-08-23 10:31:59,039: INFO/MainProcess] mingle: all alone
+[2023-08-23 10:31:59,074: INFO/MainProcess] celery@pop-os ready.
+[2023-08-23 10:31:59,078: INFO/MainProcess] Task celery_tasks.makeReplication_task[5159fe74-3f18-441f-8e28-c8a959e32c1e] received
+[2023-08-23 10:31:59,081: INFO/MainProcess] Task celery_tasks.makeReplication_task[2afa543d-ef8b-43e3-af5b-7cf1b26c2504] received
+[2023-08-23 10:31:59,083: INFO/MainProcess] Task celery_tasks.makeReplication_task[a8911f17-120e-412f-99b4-5daf61e214f1] received
+[2023-08-23 10:32:03,217: INFO/MainProcess] Task celery_tasks.makeReplication_task[86e72948-3438-464c-884c-77a5f792c85b] received
+[2023-08-23 10:32:45,914: INFO/MainProcess] Events of group {task} enabled by remote.
+[2023-08-23 10:32:50,303: INFO/MainProcess] Task celery_tasks.makeReplication_task[7e160b2e-24e1-403c-a2b0-0f11df1a0683] received
+[2023-08-23 10:35:36,746: INFO/ForkPoolWorker-1] Task celery_tasks.makeReplication_task[5159fe74-3f18-441f-8e28-c8a959e32c1e] succeeded in 217.66602166400014s: None
+[2023-08-23 10:39:28,510: INFO/ForkPoolWorker-1] Task celery_tasks.makeReplication_task[2afa543d-ef8b-43e3-af5b-7cf1b26c2504] succeeded in 231.7634949889998s: None
+[2023-08-23 10:43:27,569: INFO/MainProcess] Task celery_tasks.makeReplication_task[6cb9989b-38de-40a6-a63e-d17883bab01b] received
+[2023-08-23 10:43:37,512: INFO/MainProcess] Task celery_tasks.makeReplication_task[2ac59bca-26cd-4766-a8bb-c299262ba7bc] received
+[2023-08-23 10:47:29,345: INFO/ForkPoolWorker-1] Task celery_tasks.makeReplication_task[a8911f17-120e-412f-99b4-5daf61e214f1] succeeded in 480.832267816s: None
+[2023-08-23 10:47:29,347: INFO/MainProcess] Task celery_tasks.makeReplication_task[1415a109-d167-4dd3-ae84-917414a21584] received
+[2023-08-23 10:53:29,718: INFO/ForkPoolWorker-1] Task celery_tasks.makeReplication_task[86e72948-3438-464c-884c-77a5f792c85b] succeeded in 360.37221756100007s: None
+[2023-08-23 11:00:01,058: INFO/ForkPoolWorker-1] Task celery_tasks.makeReplication_task[7e160b2e-24e1-403c-a2b0-0f11df1a0683] succeeded in 391.337465221s: None
+[2023-08-23 11:00:44,864: INFO/ForkPoolWorker-1] Task celery_tasks.makeReplication_task[6cb9989b-38de-40a6-a63e-d17883bab01b] succeeded in 43.8037885990002s: None
+[2023-08-23 11:04:21,175: INFO/ForkPoolWorker-1] Task celery_tasks.makeReplication_task[2ac59bca-26cd-4766-a8bb-c299262ba7bc] succeeded in 216.30815926499963s: None
+[2023-08-23 11:04:50,140: INFO/ForkPoolWorker-1] Task celery_tasks.makeReplication_task[1415a109-d167-4dd3-ae84-917414a21584] succeeded in 28.963137641999765s: None
+[2023-08-26 12:20:24,068: WARNING/MainProcess] /home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/worker/consumer/consumer.py:498: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2023-08-26 12:20:24,073: INFO/MainProcess] Connected to redis://0.0.0.0:6379/0
+[2023-08-26 12:20:24,073: WARNING/MainProcess] /home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/worker/consumer/consumer.py:498: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2023-08-26 12:20:24,074: INFO/MainProcess] mingle: searching for neighbors
+[2023-08-26 12:20:25,080: INFO/MainProcess] mingle: all alone
+[2023-08-26 12:20:25,126: INFO/MainProcess] celery@pop-os ready.
+[2023-08-26 12:22:23,843: WARNING/MainProcess] /home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/worker/consumer/consumer.py:498: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2023-08-26 12:22:23,846: INFO/MainProcess] Connected to redis://0.0.0.0:6379/0
+[2023-08-26 12:22:23,846: WARNING/MainProcess] /home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/worker/consumer/consumer.py:498: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2023-08-26 12:22:23,847: INFO/MainProcess] mingle: searching for neighbors
+[2023-08-26 12:22:24,854: INFO/MainProcess] mingle: all alone
+[2023-08-26 12:22:24,874: INFO/MainProcess] celery@pop-os ready.
+[2023-08-26 12:22:40,119: INFO/MainProcess] Events of group {task} enabled by remote.
+[2023-08-26 12:23:18,623: INFO/MainProcess] Task celery_tasks.scrape_channel_info_task[c547c94c-6420-48d8-b3ee-2042e949ddcb] received
+[2023-08-26 12:23:28,658: ERROR/ForkPoolWorker-1] Task celery_tasks.scrape_channel_info_task[c547c94c-6420-48d8-b3ee-2042e949ddcb] raised unexpected: ConnectionError(MaxRetryError("HTTPSConnectionPool(host='youtube.googleapis.com', port=443): Max retries exceeded with url: /youtube/v3/search?part=snippet&q=curiousharish&type=channel&key=AIzaSyDMXE3JwrCAFkMzEFLodALk_1ZLSR0m_gc (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x7f13817b1180>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution'))"))
+Traceback (most recent call last):
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connection.py", line 174, in _new_conn
+    conn = connection.create_connection(
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/util/connection.py", line 72, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/socket.py", line 955, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+socket.gaierror: [Errno -3] Temporary failure in name resolution
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connectionpool.py", line 703, in urlopen
+    httplib_response = self._make_request(
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connectionpool.py", line 386, in _make_request
+    self._validate_conn(conn)
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1042, in _validate_conn
+    conn.connect()
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connection.py", line 358, in connect
+    self.sock = conn = self._new_conn()
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connection.py", line 186, in _new_conn
+    raise NewConnectionError(
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPSConnection object at 0x7f13817b1180>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/adapters.py", line 489, in send
+    resp = conn.urlopen(
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connectionpool.py", line 787, in urlopen
+    retries = retries.increment(
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/util/retry.py", line 592, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='youtube.googleapis.com', port=443): Max retries exceeded with url: /youtube/v3/search?part=snippet&q=curiousharish&type=channel&key=AIzaSyDMXE3JwrCAFkMzEFLodALk_1ZLSR0m_gc (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x7f13817b1180>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/app/trace.py", line 477, in trace_task
+    R = retval = fun(*args, **kwargs)
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/app/trace.py", line 760, in __protected_call__
+    return self.run(*args, **kwargs)
+  File "/home/satyasasivatsal/Data/Senitlytics/celery_tasks.py", line 11, in scrape_channel_info_task
+    scrape_channel_info(scanID, channel_username)
+  File "/home/satyasasivatsal/Data/Senitlytics/process.py", line 89, in scrape_channel_info
+    response = requests.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channel_username}&type=channel&key={DEVELOPER_KEY}").json()
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/sessions.py", line 587, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/sessions.py", line 701, in send
+    r = adapter.send(request, **kwargs)
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/adapters.py", line 565, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='youtube.googleapis.com', port=443): Max retries exceeded with url: /youtube/v3/search?part=snippet&q=curiousharish&type=channel&key=AIzaSyDMXE3JwrCAFkMzEFLodALk_1ZLSR0m_gc (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x7f13817b1180>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution'))
+[2023-08-26 12:24:55,982: INFO/MainProcess] Task celery_tasks.scrape_channel_info_task[7b965355-cb50-467e-94a4-4292622449c6] received
+[2023-08-26 12:25:11,955: ERROR/ForkPoolWorker-1] Task celery_tasks.scrape_channel_info_task[7b965355-cb50-467e-94a4-4292622449c6] raised unexpected: ConnectionError(ProtocolError('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')))
+Traceback (most recent call last):
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connectionpool.py", line 703, in urlopen
+    httplib_response = self._make_request(
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connectionpool.py", line 449, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connectionpool.py", line 444, in _make_request
+    httplib_response = conn.getresponse()
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/http/client.py", line 1374, in getresponse
+    response.begin()
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/http/client.py", line 318, in begin
+    version, status, reason = self._read_status()
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/http/client.py", line 287, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/adapters.py", line 489, in send
+    resp = conn.urlopen(
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connectionpool.py", line 787, in urlopen
+    retries = retries.increment(
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/util/retry.py", line 550, in increment
+    raise six.reraise(type(error), error, _stacktrace)
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/packages/six.py", line 769, in reraise
+    raise value.with_traceback(tb)
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connectionpool.py", line 703, in urlopen
+    httplib_response = self._make_request(
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connectionpool.py", line 449, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/urllib3/connectionpool.py", line 444, in _make_request
+    httplib_response = conn.getresponse()
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/http/client.py", line 1374, in getresponse
+    response.begin()
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/http/client.py", line 318, in begin
+    version, status, reason = self._read_status()
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/http/client.py", line 287, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/app/trace.py", line 477, in trace_task
+    R = retval = fun(*args, **kwargs)
+  File "/home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/app/trace.py", line 760, in __protected_call__
+    return self.run(*args, **kwargs)
+  File "/home/satyasasivatsal/Data/Senitlytics/celery_tasks.py", line 11, in scrape_channel_info_task
+    scrape_channel_info(scanID, channel_username)
+  File "/home/satyasasivatsal/Data/Senitlytics/process.py", line 89, in scrape_channel_info
+    response = requests.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channel_username}&type=channel&key={DEVELOPER_KEY}").json()
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/sessions.py", line 587, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/sessions.py", line 701, in send
+    r = adapter.send(request, **kwargs)
+  File "/home/satyasasivatsal/.local/lib/python3.10/site-packages/requests/adapters.py", line 547, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+[2023-08-26 12:25:47,721: WARNING/MainProcess] /home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/worker/consumer/consumer.py:498: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2023-08-26 12:25:47,724: INFO/MainProcess] Connected to redis://0.0.0.0:6379/0
+[2023-08-26 12:25:47,725: WARNING/MainProcess] /home/satyasasivatsal/anaconda3/lib/python3.10/site-packages/celery/worker/consumer/consumer.py:498: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2023-08-26 12:25:47,727: INFO/MainProcess] mingle: searching for neighbors
+[2023-08-26 12:25:48,733: INFO/MainProcess] mingle: all alone
+[2023-08-26 12:25:48,745: INFO/MainProcess] celery@pop-os ready.
+[2023-08-26 12:25:52,529: INFO/MainProcess] Events of group {task} enabled by remote.
+[2023-08-26 12:27:07,777: INFO/MainProcess] Task celery_tasks.scrape_channel_info_task[f49b3b2d-2ecc-4bf3-808b-24a6cf7127b4] received
+[2023-08-26 12:27:08,498: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-26 12:27:08,871: WARNING/ForkPoolWorker-1] Channel info inserted into Database successfully
+[2023-08-26 12:27:08,876: INFO/MainProcess] Task celery_tasks.scrape_videos_info_task[9004e433-5212-4c6c-bc55-6c0a59e1c487] received
+[2023-08-26 12:27:08,876: INFO/ForkPoolWorker-1] Task celery_tasks.scrape_channel_info_task[f49b3b2d-2ecc-4bf3-808b-24a6cf7127b4] succeeded in 1.0976759599998331s: None
+[2023-08-26 12:27:22,818: INFO/MainProcess] Task celery_tasks.scrape_HighLvlcomments_task[e336d9c5-2cab-4c08-ab6a-970a3112f76d] received
+[2023-08-26 12:27:22,818: WARNING/ForkPoolWorker-1] GET METHOD STATUS CODE [http://0.0.0.0:8000/scrape_hlcomments/?scanID=34567&channelID=UCofLyWKImmSHboaerI4AwfA]: 200
+[2023-08-26 12:27:22,824: INFO/ForkPoolWorker-1] Task celery_tasks.scrape_videos_info_task[9004e433-5212-4c6c-bc55-6c0a59e1c487] succeeded in 13.946325061000152s: None
+[2023-08-26 12:27:22,832: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-26 12:27:24,154: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-26 12:27:24,930: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-26 12:27:25,545: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-26 12:27:26,513: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-26 12:27:27,355: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-26 12:27:28,634: INFO/MainProcess] Task celery_tasks.performSentilytics_task[57a73d11-c965-48d7-a368-deeee49879da] received
+[2023-08-26 12:27:28,635: WARNING/ForkPoolWorker-1] GET METHOD STATUS CODE [http://0.0.0.0:8000/perform_sentilytics/?scanID=34567&channelID=UCofLyWKImmSHboaerI4AwfA]: 200
+[2023-08-26 12:27:28,635: INFO/ForkPoolWorker-1] Task celery_tasks.scrape_HighLvlcomments_task[e336d9c5-2cab-4c08-ab6a-970a3112f76d] succeeded in 5.808766470000137s: None
+[2023-08-26 12:27:28,638: WARNING/ForkPoolWorker-1] ======================
+[2023-08-26 12:27:28,639: WARNING/ForkPoolWorker-1] Starting Sentiment Analysis for channel: Curious Harish
+[2023-08-26 12:27:28,639: WARNING/ForkPoolWorker-1] ======================
+[2023-08-26 12:27:40,668: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   000b9485         5        0         0
+1   009c5b3c         2        2         1
+2   0313d5b0         0        5         0
+3   03fc4236         5        0         0
+4   08b5c537         5        0         0
+[2023-08-26 12:27:47,697: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   019ea453         5        0         0
+1   02c797c6         0        3         2
+2   03d1995f         3        2         0
+3   096b0217         5        0         0
+4   0d259012         0        5         0
+[2023-08-26 12:27:52,976: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   00ddb979         5        0         0
+1   0b2a13ea         0        1         4
+2   0b329bdf         0        5         0
+3   0ff2d920         4        1         0
+4   11bdfcf2         0        1         4
+[2023-08-26 12:28:00,990: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   00925139         0        5         0
+1   023d2553         4        1         0
+2   0293103e         0        5         0
+3   03c773cf         0        5         0
+4   040c3aee         1        0         4
+[2023-08-26 12:28:05,861: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   03ba113d         2        0         3
+1   052ad87d         0        2         3
+2   14c52705         0        5         0
+3   264f4f30         4        1         0
+4   32feb28e         1        4         0
+[2023-08-26 12:28:13,779: WARNING/ForkPoolWorker-1]   Comment ID  Positive  Neutral  Negative
+0   00e12592         0        5         0
+1   0eb7542c         2        2         1
+2   0eed3cc4         2        3         0
+3   0facc108         0        3         2
+4   0fc2f169         1        4         0
+[2023-08-26 12:28:13,808: INFO/MainProcess] Task celery_tasks.start_cvStats_task[1a4cc3ee-e8f6-4cbf-b90b-b013bce6cb58] received
+[2023-08-26 12:28:13,808: WARNING/ForkPoolWorker-1] GET METHOD STATUS CODE [http://0.0.0.0:8000/cvstats/?scanID=34567&channelID=UCofLyWKImmSHboaerI4AwfA]: 200
+[2023-08-26 12:28:13,809: INFO/ForkPoolWorker-1] Task celery_tasks.performSentilytics_task[57a73d11-c965-48d7-a368-deeee49879da] succeeded in 45.17253765500027s: None
+[2023-08-26 12:28:13,812: WARNING/ForkPoolWorker-1] Starting monthly stats for channel: Curious Harish
+[2023-08-26 12:28:45,368: WARNING/ForkPoolWorker-1] Found 30 divs
+[2023-08-26 12:28:45,640: WARNING/ForkPoolWorker-1] Finished monthly stats for channel: Curious Harish
+[2023-08-26 12:28:45,712: WARNING/ForkPoolWorker-1] Inserted monthly stats for channel: Curious Harish
+[2023-08-26 12:28:45,713: WARNING/ForkPoolWorker-1] Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fd460ed54b0>: Failed to establish a new connection: [Errno 111] Connection refused')': /session/d6cb8d3f41309c556d615d2b68e77dea
+[2023-08-26 12:28:45,713: WARNING/ForkPoolWorker-1] Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fd460ed5240>: Failed to establish a new connection: [Errno 111] Connection refused')': /session/d6cb8d3f41309c556d615d2b68e77dea
+[2023-08-26 12:28:45,713: WARNING/ForkPoolWorker-1] Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fd460ed6c80>: Failed to establish a new connection: [Errno 111] Connection refused')': /session/d6cb8d3f41309c556d615d2b68e77dea
+[2023-08-26 12:28:45,716: WARNING/ForkPoolWorker-1] Monthly Stats scraping successful!
+[2023-08-26 12:28:45,719: WARNING/ForkPoolWorker-1] Starting video stats for channel: Curious Harish
+[2023-08-26 12:28:45,720: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-26 12:28:48,220: WARNING/ForkPoolWorker-1] len of getLatest_videos 20
+[2023-08-26 12:28:48,221: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-26 12:28:48,850: WARNING/ForkPoolWorker-1] len of getMostviewed_videos 20
+[2023-08-26 12:28:48,852: INFO/ForkPoolWorker-1] file_cache is only supported with oauth2client<4.0.0
+[2023-08-26 12:28:48,858: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/anaconda3/lib/python3.10/json/decoder.py:353: ResourceWarning: unclosed <ssl.SSLSocket fd=21, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2409:40f0:112d:c106:221c:1d1d:42ce:96f1', 40134, 0, 0), raddr=('2404:6800:4007:82d::200a', 443, 0, 0)>
+  obj, end = self.scan_once(s, idx)
+
+[2023-08-26 12:28:48,859: WARNING/ForkPoolWorker-1] /home/satyasasivatsal/anaconda3/lib/python3.10/json/decoder.py:353: ResourceWarning: unclosed <ssl.SSLSocket fd=22, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('2409:40f0:112d:c106:221c:1d1d:42ce:96f1', 45596, 0, 0), raddr=('2404:6800:4007:82d::200a', 443, 0, 0)>
+  obj, end = self.scan_once(s, idx)
+
+[2023-08-26 12:28:49,572: WARNING/ForkPoolWorker-1] len of getHighestrated_videos 20
+[2023-08-26 12:28:49,584: WARNING/ForkPoolWorker-1] Inserted video stats for channel: Curious Harish
+[2023-08-26 12:28:49,586: WARNING/ForkPoolWorker-1] Video Stats scraping successful!
+[2023-08-26 12:28:49,591: INFO/MainProcess] Task celery_tasks.makeReplication_task[f71ee4ab-7ba3-4d90-b5ae-64cde649d951] received
+[2023-08-26 12:28:49,592: WARNING/ForkPoolWorker-1] GET METHOD STATUS CODE [http://0.0.0.0:8000/make_replica/?scanID=34567&channelID=UCofLyWKImmSHboaerI4AwfA]: 200
+[2023-08-26 12:28:49,592: INFO/ForkPoolWorker-1] Task celery_tasks.start_cvStats_task[1a4cc3ee-e8f6-4cbf-b90b-b013bce6cb58] succeeded in 35.78263753700003s: None
+[2023-08-26 12:28:50,045: INFO/ForkPoolWorker-1] Task celery_tasks.makeReplication_task[f71ee4ab-7ba3-4d90-b5ae-64cde649d951] succeeded in 0.4521914800002378s: None

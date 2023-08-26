@@ -76,7 +76,7 @@ async def get_video_info(video_url):
     
     return None
 
-async def search_youtube_videos(driver: webdriver.Firefox, keyword: str, target_vid_link: str):
+def search_youtube_videos(driver: webdriver.Firefox, keyword: str, target_vid_link: str):
     
     keyword = keyword.replace(" ", "+")
     driver.get(f'https://www.youtube.com/results?search_query={keyword}')
@@ -108,7 +108,7 @@ async def search_youtube_videos(driver: webdriver.Firefox, keyword: str, target_
         
     return driver
 
-async def scrape_video_data(driver: webdriver.Firefox) -> dict:
+def scrape_video_data(driver: webdriver.Firefox) -> dict:
     """
     Scrape video data from the current YouTube search results page.
     """
@@ -119,7 +119,7 @@ async def scrape_video_data(driver: webdriver.Firefox) -> dict:
         title = result.find_element(By.CSS_SELECTOR, '.title-and-badge.style-scope.ytd-video-renderer').text
         views = result.find_element(By.CSS_SELECTOR, '.style-scope ytd-video-meta-block').text.split('\n')[0]
 
-        video_info = await get_video_info(link)
+        video_info = get_video_info(link)
         
         if video_info:
             vid_duration = video_info['duration']
@@ -159,7 +159,7 @@ async def scrape_video_data(driver: webdriver.Firefox) -> dict:
 
     return youtube_data
 
-async def start_videoRanker(videoID,keyword):
+def start_videoRanker(videoID,keyword):
     print("Starting to Scrape....")
     print(f"Keyword : {keyword}\nVideo ID : {videoID}")
     options = get_webdriverOptions()
@@ -168,11 +168,11 @@ async def start_videoRanker(videoID,keyword):
     print("Driver Initialized....")
     print("Searching Youtube Videos....")
     target_vid_link = "https://www.youtube.com/watch?v=" + videoID
-    await search_youtube_videos(driver=driver, keyword=keyword, target_vid_link=target_vid_link)
+    search_youtube_videos(driver=driver, keyword=keyword, target_vid_link=target_vid_link)
     print("Search Completed....")
     print("Scraping Video Data....")
-    youtube_data = await scrape_video_data(driver=driver)
+    youtube_data = scrape_video_data(driver=driver)
     print("Scraping Completed....")
-    await insert_video_rankings(videoID, keyword, youtube_data)
+    insert_video_rankings(videoID, keyword, youtube_data)
     print("Data Inserted....")
    

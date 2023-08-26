@@ -99,57 +99,54 @@ def begin_videoStats(channelID,channelName):
     insert_data_to_video_stats(vdf)
     print("Inserted video stats for channel: %s"%(channelName))
 
-import asyncio
-cv_stats_lock = asyncio.Lock()
 
-async def start_cvStats(scanID, channelID,channelName):
-    async with cv_stats_lock:
-        for retry in range(1, MAX_RETRIES+1):
-            try:
-                await insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_monthly",is_start=True)
-            
-                begin_monthlyStats(channelID,channelName)
-                
-                completion_message = f"Monthly Stats scraping Completed for channel: {channelName}."
-                await insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_monthly",notes=completion_message,success=True)
-                
-                print("Monthly Stats scraping successful!")
-                break
-            
-            except Exception as e:  
-                print(f"Error scraping Monthly Stats for {channelName} (Attempt {retry}/{MAX_RETRIES}): {str(e)}")
-                
-                if retry < MAX_RETRIES:
-                    print(f"Retrying after {RETRY_DELAY} seconds...")
-                    time.sleep(RETRY_DELAY)
-                else:
-                    print("Maximum number of retries reached. Exiting.")
-                    error_message = f"Error Scraping Monthly Stats for {channelName} - {str(e)}"
-                    await insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_monthly",notes=error_message,success=False)
-                
-        
-        for retry in range(1, MAX_RETRIES+1):
-            try:
-                await insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_video",is_start=True)
-
-                begin_videoStats(channelID,channelName)
-
-                completion_message = f"Video Stats scraping Completed for channel: {channelName}."
-                await insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_video",notes=completion_message,success=True)
-
-                print("Video Stats scraping successful!")
-                break
-
-            except Exception as e:
-                print(f"Error scraping Video Stats for {channelName} (Attempt {retry}/{MAX_RETRIES}): {str(e)}")
-                
-                if retry < MAX_RETRIES:
-                    print(f"Retrying after {RETRY_DELAY} seconds...")
-                    time.sleep(RETRY_DELAY)
-                else:
-                    print("Maximum number of retries reached. Exiting.")
-                    error_message = f"Error Scraping Video Stats for {channelName} - {str(e)}"
-                    await insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_video",notes=error_message,success=False)
-                
-        await make_post_request(f"http://0.0.0.0:8000/make_replica/?scanID={scanID}&channelID={channelID}")
+def start_cvStats(scanID, channelID,channelName):
     
+    for retry in range(1, MAX_RETRIES+1):
+        try:
+            insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_monthly",is_start=True)
+        
+            begin_monthlyStats(channelID,channelName)
+            
+            completion_message = f"Monthly Stats scraping Completed for channel: {channelName}."
+            insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_monthly",notes=completion_message,success=True)
+            
+            print("Monthly Stats scraping successful!")
+            break
+        
+        except Exception as e:  
+            print(f"Error scraping Monthly Stats for {channelName} (Attempt {retry}/{MAX_RETRIES}): {str(e)}")
+            
+            if retry < MAX_RETRIES:
+                print(f"Retrying after {RETRY_DELAY} seconds...")
+                time.sleep(RETRY_DELAY)
+            else:
+                print("Maximum number of retries reached. Exiting.")
+                error_message = f"Error Scraping Monthly Stats for {channelName} - {str(e)}"
+                insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_monthly",notes=error_message,success=False)
+            
+    
+    for retry in range(1, MAX_RETRIES+1):
+        try:
+            insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_video",is_start=True)
+
+            begin_videoStats(channelID,channelName)
+
+            completion_message = f"Video Stats scraping Completed for channel: {channelName}."
+            insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_video",notes=completion_message,success=True)
+
+            print("Video Stats scraping successful!")
+            break
+
+        except Exception as e:
+            print(f"Error scraping Video Stats for {channelName} (Attempt {retry}/{MAX_RETRIES}): {str(e)}")
+            
+            if retry < MAX_RETRIES:
+                print(f"Retrying after {RETRY_DELAY} seconds...")
+                time.sleep(RETRY_DELAY)
+            else:
+                print("Maximum number of retries reached. Exiting.")
+                error_message = f"Error Scraping Video Stats for {channelName} - {str(e)}"
+                insert_scan_info(scan_id = scanID,channel_id=channelID,phase="cvstats_video",notes=error_message,success=False)
+            
+    make_post_request(f"http://0.0.0.0:8000/make_replica/?scanID={scanID}&channelID={channelID}")

@@ -1,5 +1,4 @@
 from googleapiclient.discovery import build
-from fastapi import BackgroundTasks
 from googleapiclient.errors import HttpError
 
 import yt_dlp
@@ -19,7 +18,7 @@ from database import insert_channel_info,insert_videos_info,\
 from emojiAnalysis import calcEmojiFreq
 from celery_conf import celeryApp
 
-async def scrape_videos_info(scanID: str,channelID: str,channelUsername: str):
+def scrape_videos_info(scanID: str,channelID: str,channelUsername: str):
     """
     Endpoint to get the latest 6 records.
     """    
@@ -77,14 +76,14 @@ async def scrape_videos_info(scanID: str,channelID: str,channelUsername: str):
         PARTIAL_VIEWS_CNT += view_count
         
     df = pd.DataFrame(video_data)
-    await insert_videos_info(df)
-    await update_channel_partialData(channelID,PARTIAL_LIKES_CNT,PARTIAL_COMMENTS_CNT,PARTIAL_VIEWS_CNT)
+    insert_videos_info(df)
+    update_channel_partialData(channelID,PARTIAL_LIKES_CNT,PARTIAL_COMMENTS_CNT,PARTIAL_VIEWS_CNT)
     
     completion_message = f"For Channel: {channelUsername}, Scraping of Channel Info and Videos Info completed"
-    await insert_scan_info(scan_id = scanID,channel_id= channelID, phase="scrape_channel", notes=completion_message,success=True)
-    await make_post_request(f"http://0.0.0.0:8000/scrape_hlcomments/?scanID={scanID}&channelID={channelID}")
+    insert_scan_info(scan_id = scanID,channel_id= channelID, phase="scrape_channel", notes=completion_message,success=True)
+    make_post_request(f"http://0.0.0.0:8000/scrape_hlcomments/?scanID={scanID}&channelID={channelID}")
     
-async def scrape_channel_info(scanID,channel_username):
+def scrape_channel_info(scanID,channel_username):
     
     DEVELOPER_KEY,_,_ = get_DevKey()
     response = requests.get(f"https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={channel_username}&type=channel&key={DEVELOPER_KEY}").json()
@@ -131,7 +130,7 @@ async def scrape_channel_info(scanID,channel_username):
         banner_url = channel_response['items'][0]['brandingSettings']['image']['bannerExternalUrl']
         channel_info['channel_logo_url']['banner'] = banner_url
         
-        await insert_channel_info(
+        insert_channel_info(
         scanID,
         channel_info
         )
@@ -151,10 +150,10 @@ def generate_comment_id(video_id, comment_text):
 
     return comment_id
 
-async def scrape_HighLvlcomments(scanID, channelID):
+def scrape_HighLvlcomments(scanID, channelID):
     
-    channelName = await get_channel_name(channelID)
-    video_ids = await get_videoids_by_channelID(channelID)
+    channelName = get_channel_name(channelID)
+    video_ids = get_videoids_by_channelID(channelID)
      
     for video_id in video_ids:
         DEVELOPER_KEY,YOUTUBE_API_SERVICE_NAME,YOUTUBE_API_VERSION = get_DevKey()
@@ -194,12 +193,12 @@ async def scrape_HighLvlcomments(scanID, channelID):
             HighLvldf['Comment ID'] = HighLvldf.apply(lambda row: generate_comment_id(row['Video ID'], row['Comments']), axis=1)
         
             
-            await insert_highlvl_cmntInfo(HighLvldf)
-            emoji_frequency = await calcEmojiFreq(HighLvldf)
-            await insert_EmojiFreq(video_id,emoji_frequency)
+            insert_highlvl_cmntInfo(HighLvldf)
+            emoji_frequency = calcEmojiFreq(HighLvldf)
+            insert_EmojiFreq(video_id,emoji_frequency)
             
-            HighLvldf_filtered = await FilterDF(HighLvldf)
-            await insert_highlvl_filtered_cmntInfo(HighLvldf_filtered)
+            HighLvldf_filtered = FilterDF(HighLvldf)
+            insert_highlvl_filtered_cmntInfo(HighLvldf_filtered)
             
             # json_data = HighLvldf.groupby('Video ID').apply(lambda x: x[['Comments', 'Comment ID']].to_dict('records')).to_json()
             # json_data = json.loads(json_data)
@@ -210,8 +209,8 @@ async def scrape_HighLvlcomments(scanID, channelID):
             return {'error':f'An HTTP error occurred: {e}'}
     
     completion_message = f"Scraping of high-level comments completed for channel: {channelName}."
-    await insert_scan_info(scan_id = scanID,channel_id= channelID,phase="scrape_hlcomments", notes=completion_message,success=True)
-    await make_post_request(f"http://0.0.0.0:8000/perform_sentilytics/?scanID={scanID}&channelID={channelID}")
+    insert_scan_info(scan_id = scanID,channel_id= channelID,phase="scrape_hlcomments", notes=completion_message,success=True)
+    make_post_request(f"http://0.0.0.0:8000/perform_sentilytics/?scanID={scanID}&channelID={channelID}")
     
 # def get_Lowlvlcomments(videoId):
     
