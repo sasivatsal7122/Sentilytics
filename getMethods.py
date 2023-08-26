@@ -9,9 +9,6 @@ conn_params = {
     "db": "sentilytics",
 }
 
-# connection = pymysql.connect(**conn_params)
-# cursor = connection.cursor()
-
 def get_channel_info(channel_id):
     
     with pymysql.connect(**conn_params) as connection:

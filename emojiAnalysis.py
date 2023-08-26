@@ -1,7 +1,7 @@
 import emoji
 import pandas as pd
 
-async def calcEmojiFreq(df):
+def calcEmojiFreq(df):
     
     def extract_emojis(comment):
         return ''.join(c for c in comment if c in emoji.EMOJI_DATA)\

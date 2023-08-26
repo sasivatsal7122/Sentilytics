@@ -2,9 +2,8 @@ import pymysql
 
 from database import insert_scan_info
 from getMethods import select_data_by_scan_id
-from postreq import send_telegram_message
 
-async def makeReplication(scanID,channelID):
+def makeReplication(scanID,channelID):
     
     data_dict = select_data_by_scan_id(scanID)
     conn_params = {
@@ -180,6 +179,6 @@ async def makeReplication(scanID,channelID):
     conn.close()
     
     completion_message = "Replication Done."
-    await insert_scan_info(scan_id = scanID,channel_id=channelID, phase='make_replica',notes=completion_message,success=True)
+    insert_scan_info(scan_id = scanID,channel_id=channelID, phase='make_replica',notes=completion_message,success=True)
     #await send_telegram_message(channelID, channelName)
    

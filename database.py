@@ -13,9 +13,6 @@ conn_params = {
     "db": "sentilytics",
 }
 
-# connection = pymysql.connect(**conn_params)
-# cursor = connection.cursor()
-
 def get_DevKey():
     config = configparser.ConfigParser()
     config.read('config.ini')
@@ -41,7 +38,7 @@ def update_scaninfo_channelid(channel_id, scan_id, phase="scrape_channel"):
         connection.commit()
 
     
-async def insert_scan_info(scan_id=None, channel_id=None, phase=None, is_start=False, success=False, notes=None):
+def insert_scan_info(scan_id=None, channel_id=None, phase=None, is_start=False, success=False, notes=None):
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
             current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -61,7 +58,7 @@ async def insert_scan_info(scan_id=None, channel_id=None, phase=None, is_start=F
                 
         connection.commit()
 
-async def insert_channel_info(scan_id, channel_info):
+def insert_channel_info(scan_id, channel_info):
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
             try:
@@ -109,7 +106,7 @@ async def insert_channel_info(scan_id, channel_info):
 
         connection.commit()
     
-async def update_channel_partialData(channel_id, partial_likes_count, partial_comments_count, partial_views_count):
+def update_channel_partialData(channel_id, partial_likes_count, partial_comments_count, partial_views_count):
     
     update_query = '''
         UPDATE Channels
@@ -123,7 +120,7 @@ async def update_channel_partialData(channel_id, partial_likes_count, partial_co
             cursor.execute(update_query, (partial_likes_count, partial_comments_count, partial_views_count, channel_id))
         connection.commit()
     
-async def insert_videos_info(df):
+def insert_videos_info(df):
     video_data = df.to_records(index=False)
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
@@ -161,7 +158,7 @@ async def insert_videos_info(df):
 
         connection.commit()
 
-async def insert_highlvl_cmntInfo(df):
+def insert_highlvl_cmntInfo(df):
     comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
     comments_data_tuples = [tuple(record) for record in comments_data]
     with pymysql.connect(**conn_params) as connection:
@@ -176,7 +173,7 @@ async def insert_highlvl_cmntInfo(df):
 
         connection.commit()
     
-async def insert_highlvl_filtered_cmntInfo(df):
+def insert_highlvl_filtered_cmntInfo(df):
     comments_data = df[['Video ID', 'Comment ID', 'Comments']].to_records(index=False)
     comments_data_tuples = [tuple(record) for record in comments_data]
     with pymysql.connect(**conn_params) as connection:
@@ -191,7 +188,7 @@ async def insert_highlvl_filtered_cmntInfo(df):
 
         connection.commit()
 
-async def insert_hlSentiComments(df):
+def insert_hlSentiComments(df):
     comments_data = df[['Video ID', 'Comment ID', 'Comments', 'Sentiment']].to_records(index=False)
     comments_data_tuples = [tuple(record) for record in comments_data]
     with pymysql.connect(**conn_params) as connection:
@@ -203,7 +200,7 @@ async def insert_hlSentiComments(df):
             
         connection.commit()
 
-async def insert_EmojiFreq(videoID, freqDict):
+def insert_EmojiFreq(videoID, freqDict):
     freqDictString = str(freqDict)
     query = "INSERT INTO Emoji_Frequency (vid_id, highlvl_freq) VALUES (%s, %s) ON DUPLICATE KEY UPDATE highlvl_freq=VALUES(highlvl_freq)"
     with pymysql.connect(**conn_params) as connection:
@@ -211,7 +208,7 @@ async def insert_EmojiFreq(videoID, freqDict):
             cursor.execute(query, (videoID, freqDictString))
         connection.commit()
     
-async def insert_video_rankings(videoID, keyword, video_data):
+def insert_video_rankings(videoID, keyword, video_data):
     query = '''
         INSERT INTO Video_Rankings (
             vid_id,
@@ -318,7 +315,7 @@ def insert_data_to_monthly_stats(df):
 
         connection.commit()
 
-async def get_FhlComments(vid_id):
+def get_FhlComments(vid_id):
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
             query = f"SELECT * FROM Comments_filtered WHERE vid_id = '{vid_id}'"
@@ -328,7 +325,7 @@ async def get_FhlComments(vid_id):
     df = pd.DataFrame(data, columns=columns)
     return df
 
-async def get_MhlComments(vid_id):
+def get_MhlComments(vid_id):
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
             query = f"SELECT * FROM Comments_Unfiltered WHERE vid_id = '{vid_id}'"
@@ -339,14 +336,14 @@ async def get_MhlComments(vid_id):
     return df
 
 
-async def get_channel_name(channel_id):
+def get_channel_name(channel_id):
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
             cursor.execute('SELECT channel_title FROM Channels WHERE channel_id = %s', (channel_id,))
             result = cursor.fetchone()
     return result[0] if result else None
 
-async def retrieve_comments_by_sentiment(table_name, videoID, sentiment):
+def retrieve_comments_by_sentiment(table_name, videoID, sentiment):
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
             query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = %s AND sentiment = %s"
@@ -363,7 +360,7 @@ async def retrieve_comments_by_sentiment(table_name, videoID, sentiment):
 
     return {videoID: comments}
 
-async def retrieve_all_comments(table_name, videoID):
+def retrieve_all_comments(table_name, videoID):
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
             query = f"SELECT vid_id, comment_id, comment, sentiment FROM {table_name} WHERE vid_id = %s"
@@ -379,7 +376,7 @@ async def retrieve_all_comments(table_name, videoID):
 
     return {videoID: comments}
 
-async def get_videos_by_channelID(channelID):
+def get_videos_by_channelID(channelID):
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
             query = "SELECT vid_id, vid_title, vid_view_cnt, vid_like_cnt, vid_comment_cnt, vid_url, vid_desc, vid_duration, vid_published_at, vid_thumbnail FROM Videos WHERE channel_id = %s"
@@ -405,7 +402,7 @@ async def get_videos_by_channelID(channelID):
     return {"channelID": channelID, "videos": videos}
 
 
-async def get_videoids_by_channelID(channelID):
+def get_videoids_by_channelID(channelID):
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
             query = "SELECT vid_id FROM Videos WHERE channel_id = %s"
@@ -420,7 +417,7 @@ async def get_videoids_by_channelID(channelID):
     return videos
 
 
-async def get_user_requests(scan_id):
+def get_user_requests(scan_id):
     with pymysql.connect(**conn_params) as connection:
         with connection.cursor() as cursor:
             cursor.execute('''
